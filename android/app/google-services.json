@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1057029347781",
+    "project_id": "thunder-65580",
+    "storage_bucket": "thunder-65580.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057029347781:android:2947d7438b130df62ed3ac",
+        "android_client_info": {
+          "package_name": "com.thunder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1057029347781-cpos1icjl1gogmktniu8rm335cjus78b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmiWghgspFLkXwX5GeBhbmiRn4TExXKg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1057029347781-cpos1icjl1gogmktniu8rm335cjus78b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
