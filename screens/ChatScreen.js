@@ -7,15 +7,18 @@ import {
   Button,
   Keyboard,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useLayoutEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useRoute} from '@react-navigation/native';
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
-import ChatMessage from '../components/ChatMessage';
+import auth from '@react-native-firebase/auth';
 import moment from 'moment';
+import ChatMessage from '../components/ChatMessage';
+// import {TouchableOpacity} from 'react-native-gesture-handler';
 
 const ChatScreen = props => {
   const navigation = useNavigation();
@@ -24,108 +27,156 @@ const ChatScreen = props => {
   const [sender, setSender] = useState(null);
   const [receiver, setReceiver] = useState(null);
   const [text, setText] = useState('');
-  const [messages, setMessages] = useState(null);
+  const [messages, setMessages] = useState([]);
+
   //make a request to db to fetch user data with a uid
 
+  // useEffect(() => {
+  //   firestore()
+  //     .collection('Users')
+  //     .where('uid', '==', senderUid)
+  //     .get()
+  //     .then(response => {
+  //       // if (!isCancelled) {
+  //       const userDoc = response._docs[0]._data;
+  //       setSender(userDoc);
+  //       // }
+  //     })
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  // }, [sender]);
+
   useEffect(() => {
-    firestore()
-      .collection('Users')
-      .where('uid', '==', senderUid)
-      .get()
-      .then(response => {
-        const userDoc = response._docs[0]._data;
-        setSender(userDoc);
-      })
-      .catch(err => {
+    let isMounted = true;
+
+    const getReceiver = async () => {
+      try {
+        if (isMounted) {
+          const response = await firestore()
+            .collection('Users')
+            .where('uid', '==', receiverUid)
+            .get();
+          const userDoc = response._docs[0]._data;
+          setReceiver(prevReceiver => userDoc);
+          // console.log(receiver);
+        }
+      } catch (err) {
         console.log(err);
-      });
+      }
+    };
 
-    firestore()
-      .collection('Users')
-      .where('uid', '==', receiverUid)
-      .get()
-      .then(response => {
-        const userDoc = response._docs[0]._data;
-        setReceiver(userDoc);
-        console.log(receiver.lastSignInTime);
-      })
-      .catch(err => {
+    getReceiver();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: '',
+
+      headerTitleAlign: 'left',
+      headerBackTitleVisible: false,
+      headerTitle: () => (
+        <View
+          styles={{
+            flexDirection: 'row',
+          }}>
+          <Image
+            resizeMode="contain"
+            style={{width: 40, height: 40, borderRadius: 50}}
+            source={
+              receiver?.photoURL
+                ? {uri: receiver?.photoURL}
+                : {
+                    uri: 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
+                  }
+            }
+          />
+          <Text style={{color: 'black', fontSize: 10, fontWeight: 'bold'}}>
+            {receiver?.displayName}
+          </Text>
+        </View>
+      ),
+
+      headerRight: () => (
+        <View style={{flexDirection: 'row'}}>
+          <Text>+</Text>
+          <Text>-</Text>
+        </View>
+      ),
+    });
+  }, [navigation, receiver]);
+
+  useLayoutEffect(() => {
+    let isMounted = true;
+    const getMessages = async () => {
+      try {
+        if (isMounted) {
+          let temp = [];
+
+          const response = await firestore()
+            .collection('Messages')
+            .orderBy('createdAt', 'asc')
+            .get();
+
+          response._docs.forEach(doc => {
+            if (doc._data.conversationId == conversationId) {
+              temp.push(doc._data);
+            }
+          });
+          setMessages(prevMessages => temp);
+          setMessages(prevMessages => console.log(prevMessages));
+        }
+      } catch (err) {
         console.log(err);
-      });
-    //fetch all messages
-    // alert(senderUid);
+      }
+    };
 
-    firestore()
-      .collection('Messages')
-      // .where('senderUid', '==', senderUid)
-      .get()
-      .then(response => {
-        var messages = [];
-        response._docs.map(doc => {
-          const data = doc._data;
+    getMessages();
+    return () => {
+      isMounted = false;
+    };
+  }, [route]);
 
-          // console.log(data.message.createdAt);
+  //fetch all messages
+  // alert(senderUid);
 
-          if (
-            data.message.senderUid === senderUid ||
-            data.message.senderUid === receiverUid
-          ) {
-            messages.push(data.message);
-          }
-        });
-        // console.log(messages);
-        setMessages(messages);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }, [messages]);
-
-  const sendMsg = text => {
+  const sendMsg = async text => {
     //create a msg collection
     if (text !== '') {
       const message = {
         text: text,
         senderUid: senderUid,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        conversationId: conversationId,
       };
-      console.log(message);
-      firestore()
-        .collection('Messages')
-        .add({message})
-        .then(response => {
-          console.log('message saved to firestore');
-        })
-        .catch(err => {
-          console.log(err);
-        });
+
+      const response = await firestore().collection('Messages').add(message);
+      let messageId = response.id;
+      const docRef = await firestore().collection('Messages').doc(messageId);
+      // console.log(docRef);
+      const result = await docRef.update({messageId: messageId});
+      const res = await firestore().collection('Messages').doc(messageId).get();
+      const updatedMessage = res._data;
+     
+      setMessages(prevMessages => console.log(prevMessages));
+
       setText('');
     }
     Keyboard.dismiss();
   };
 
+  // const forwardMessage = () => {
+  //   console.log('forward message');
+  // };
+
   return (
     <View style={styles.container}>
-      <Text>ChatScreen --{conversationId}</Text>
-
-      {receiver && (
-        <View>
-          <Image
-            style={{width: 50, height: 50}}
-            source={{uri: receiver.photoURL}}
-          />
-          <Text>
-            receiver is {receiver.displayName} ({receiver.phoneNumber})
-          </Text>
-          <Text>
-            last seen at{' '} 5 pm
-          </Text>
-        </View>
-      )}
-
       {messages &&
         (messages.length > 0 ? (
-          <ScrollView style={{backgroundColor: 'grey', flex: 1}}>
+          <ScrollView style={{backgroundColor: 'grey', flex: 1, height: 100}}>
             {messages.map((message, id) => {
               return <ChatMessage key={id} message={message} />;
             })}

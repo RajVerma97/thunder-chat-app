@@ -9,6 +9,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import ChatScreen from './screens/ChatScreen';
+import ContactScreen from './screens/ContactScreen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
@@ -16,8 +17,6 @@ const Stack = createNativeStackNavigator();
 
 const AuthNavigation = () => {
   const [currentUser, setCurrentUser] = useState(null);
-
-  //query the database for a number
 
   useEffect(() => {
     auth().onAuthStateChanged(user => {
@@ -30,31 +29,89 @@ const AuthNavigation = () => {
   });
 
   const screenOption = {
-    headerShown: false,
+    headerShown: true,
   };
 
   return (
     <NavigationContainer>
       {!currentUser ? (
-        <Stack.Navigator
-          initialRouteName="SplashScreen"
-          screenOptions={screenOption}>
-          <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Navigator initialRouteName="SplashScreen">
+          <Stack.Screen
+            name="SplashScreen"
+            component={SplashScreen}
+            options={{
+              title: '',
+              headerShown: false,
+            }}
+          />
           <Stack.Screen
             name="PhoneNumberScreen"
             component={PhoneNumberScreen}
+            options={{
+              title: '',
+              headerShown: false,
+            }}
           />
-          <Stack.Screen name="VerifyOtpScreen" component={VerifyOtpScreen} />
+          <Stack.Screen
+            name="VerifyOtpScreen"
+            component={VerifyOtpScreen}
+            options={{
+              title: '',
+              headerShown: false,
+            }}
+          />
         </Stack.Navigator>
       ) : (
         <Stack.Navigator
           initialRouteName="SplashScreen"
           screenOptions={screenOption}>
           {!currentUser.displayName && (
-            <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+            <Stack.Screen
+              name="ProfileScreen"
+              component={ProfileScreen}
+              options={{
+                title: '',
+                headerShown: false,
+              }}
+            />
           )}
-          <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
-          <Stack.Screen name="ChatScreen" component={ChatScreen} />
+          <Stack.Screen
+            name="WelcomeScreen"
+            component={WelcomeScreen}
+            options={{
+              title: 'Thunder',
+              headerShown: true,
+              headerStyle: {
+                backgroundColor: 'lightblue',
+              },
+            }}
+          />
+          <Stack.Screen
+            name="ContactScreen"
+            component={ContactScreen}
+            options={{
+              title: 'ContactScreen',
+              headerShown: true,
+              headerStyle: {
+                backgroundColor: 'lightblue',
+              },
+            }}
+          />
+          <Stack.Screen
+            name="ChatScreen"
+            component={ChatScreen}
+            options={{
+              title: 'Chat Screen',
+              headerShown: true,
+              headerStyle: {
+                backgroundColor: 'lightblue',
+              },
+              headerTintColor: 'black',
+              headerTintStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
         </Stack.Navigator>
       )}
     </NavigationContainer>

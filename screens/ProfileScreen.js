@@ -74,7 +74,7 @@ const ProfileScreen = props => {
     userCollection
       .add(user)
       .then(() => {
-        console.log('user added to firestore');
+        // console.log('user added to firestore');
       })
       .catch(err => console.log(err));
     navigation.navigate('WelcomeScreen');
