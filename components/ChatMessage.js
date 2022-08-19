@@ -17,14 +17,15 @@ const ChatMessage = props => {
 
   const openModal = () => {
     // setMessageId(messageId);
-
-    setModalToggle(true);
-    console.log('show modal');
+    requestAnimationFrame(() => {
+      setModalToggle(true);
+    });
   };
 
   const closeModal = () => {
-    console.log('hide modal');
-    setModalToggle(false);
+    requestAnimationFrame(() => {
+      setModalToggle(false);
+    });
   };
   const deleteMessage = async messsageId => {
     try {
@@ -32,6 +33,7 @@ const ChatMessage = props => {
         .collection('Messages')
         .doc(messageId)
         .delete();
+
       setModalToggle(false);
     } catch (err) {
       console.log(err);

@@ -18,7 +18,6 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import moment from 'moment';
 import ChatMessage from '../components/ChatMessage';
-// import {TouchableOpacity} from 'react-native-gesture-handler';
 
 const ChatScreen = props => {
   const navigation = useNavigation();
@@ -28,24 +27,9 @@ const ChatScreen = props => {
   const [receiver, setReceiver] = useState(null);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
+  // const messages = useMemo(() => {
 
-  //make a request to db to fetch user data with a uid
-
-  // useEffect(() => {
-  //   firestore()
-  //     .collection('Users')
-  //     .where('uid', '==', senderUid)
-  //     .get()
-  //     .then(response => {
-  //       // if (!isCancelled) {
-  //       const userDoc = response._docs[0]._data;
-  //       setSender(userDoc);
-  //       // }
-  //     })
-  //     .catch(err => {
-  //       console.log(err);
-  //     });
-  // }, [sender]);
+  // }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -59,6 +43,7 @@ const ChatScreen = props => {
             .get();
           const userDoc = response._docs[0]._data;
           setReceiver(prevReceiver => userDoc);
+
           // console.log(receiver);
         }
       } catch (err) {
@@ -110,24 +95,21 @@ const ChatScreen = props => {
   }, [navigation, receiver]);
 
   useLayoutEffect(() => {
+    console.log('get initial messages');
     let isMounted = true;
     const getMessages = async () => {
       try {
         if (isMounted) {
-          let temp = [];
-
-          const response = await firestore()
+          // console.log(`conversation id: ${conversationId}`);
+          firestore()
             .collection('Messages')
+            .where('conversationId', '==', conversationId)
             .orderBy('createdAt', 'asc')
-            .get();
-
-          response._docs.forEach(doc => {
-            if (doc._data.conversationId == conversationId) {
-              temp.push(doc._data);
-            }
-          });
-          setMessages(prevMessages => temp);
-          setMessages(prevMessages => console.log(prevMessages));
+            .onSnapshot(snapshot => {
+              if (snapshot && snapshot._docs) {
+                setMessages(snapshot._docs.map(doc => doc._data));
+              }
+            });
         }
       } catch (err) {
         console.log(err);
@@ -138,7 +120,7 @@ const ChatScreen = props => {
     return () => {
       isMounted = false;
     };
-  }, [route]);
+  }, []);
 
   //fetch all messages
   // alert(senderUid);
@@ -158,10 +140,15 @@ const ChatScreen = props => {
       const docRef = await firestore().collection('Messages').doc(messageId);
       // console.log(docRef);
       const result = await docRef.update({messageId: messageId});
-      const res = await firestore().collection('Messages').doc(messageId).get();
-      const updatedMessage = res._data;
-     
-      setMessages(prevMessages => console.log(prevMessages));
+      const updatedMessage = await firestore()
+        .collection('Messages')
+        .doc(messageId)
+        .get();
+      // setMessages([ {message: message},...messages,]);
+      const me = updatedMessage._data;
+      // console.log(me);
+
+      setMessages([...messages, me]);
 
       setText('');
     }

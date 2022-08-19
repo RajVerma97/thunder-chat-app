@@ -19,13 +19,14 @@ const AuthNavigation = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    auth().onAuthStateChanged(user => {
+    const unsubscribe = auth().onAuthStateChanged(user => {
       if (user) {
         setCurrentUser(user);
       } else {
         setCurrentUser(null);
       }
     });
+    return unsubscribe;
   });
 
   const screenOption = {
