@@ -18,6 +18,8 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import moment from 'moment';
 import ChatMessage from '../components/ChatMessage';
+import Animated from 'react-native-reanimated';
+import Icon from 'react-native-vector-icons/AntDesign';
 
 const ChatScreen = props => {
   const navigation = useNavigation();
@@ -27,9 +29,6 @@ const ChatScreen = props => {
   const [receiver, setReceiver] = useState(null);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
-  // const messages = useMemo(() => {
-
-  // }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -133,6 +132,7 @@ const ChatScreen = props => {
         senderUid: senderUid,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         conversationId: conversationId,
+        isLiked:false
       };
 
       const response = await firestore().collection('Messages').add(message);
@@ -159,13 +159,27 @@ const ChatScreen = props => {
   //   console.log('forward message');
   // };
 
+  const likeMessage = async(messageId) => {
+    console.log('like message ' + messageId);
+    const messageRef = await firestore().collection('Messages').doc(messageId);
+    const updatedMessage = messageRef.update({ isLiked: true });
+  };
+
   return (
     <View style={styles.container}>
       {messages &&
         (messages.length > 0 ? (
           <ScrollView style={{backgroundColor: 'grey', flex: 1, height: 100}}>
             {messages.map((message, id) => {
-              return <ChatMessage key={id} message={message} />;
+              return (
+                <ChatMessage
+                  setMessages={setMessages}
+                  messages={messages}
+                  key={id}
+                  message={message}
+                  likeMessage={likeMessage}
+                />
+              );
             })}
           </ScrollView>
         ) : (
@@ -180,13 +194,24 @@ const ChatScreen = props => {
           placeholder="type a msg..."
           placeholderTextColor="black"
         />
-        <Button
-          style={styles.sendMsgBtn}
-          onPress={() => {
-            sendMsg(text);
-          }}
-          title="send msg"
-        />
+        {text ? (
+          <Button
+            style={styles.sendMsgBtn}
+            onPress={() => {
+              sendMsg(text);
+            }}
+            title="send msg"
+          />
+        ) : (
+          <></>
+        )}
+
+        <TouchableOpacity onPress={() => console.log('show bottom sheet')}>
+          <Icon name="picture" color="black" size={30} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => console.log('show bottom sheet')}>
+          <Icon name="gift" color="black" size={40} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -210,7 +235,7 @@ const styles = StyleSheet.create({
   },
 
   inputMsg: {
-    width: '70%',
+    width: '50%',
     backgroundColor: 'lightgrey',
     color: 'black',
     fontSize: 18,

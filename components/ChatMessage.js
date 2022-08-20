@@ -9,11 +9,16 @@ import {
 import React, {useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import Icon from 'react-native-vector-icons/AntDesign';
+
 import moment from 'moment';
 const ChatMessage = props => {
   const {messageId, text, senderUid, createdAt} = props.message;
-  // const [messageId, setMessageId] = useState(null);
+  let messages = props.messages;
+  const likeMessage = props.likeMessage;
+  let setMessages = props.setMessages;
   const [modalToggle, setModalToggle] = useState(false);
+  // const [isLiked, setIsLiked] = useState(true);
 
   const openModal = () => {
     // setMessageId(messageId);
@@ -33,6 +38,15 @@ const ChatMessage = props => {
         .collection('Messages')
         .doc(messageId)
         .delete();
+      console.log('update state');
+
+      setMessages(messages =>
+        messages.filter(message => {
+          if (message.messageId !== messageId) {
+            return message;
+          }
+        }),
+      );
 
       setModalToggle(false);
     } catch (err) {
@@ -49,6 +63,7 @@ const ChatMessage = props => {
       <Modal visible={modalToggle} animationType={'fade'} transparent={true}>
         <TouchableOpacity
           onPress={closeModal}
+          activeOpacity={1}
           style={{
             flex: 1,
             // backgroundColor: 'white',
@@ -77,6 +92,11 @@ const ChatMessage = props => {
                 style={{marginBottom: 5}}>
                 <Text>forward messsage</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => likeMessage(messageId)}
+                style={{marginBottom: 5}}>
+                <Text>like messsage</Text>
+              </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
         </TouchableOpacity>
@@ -88,9 +108,11 @@ const ChatMessage = props => {
           auth().currentUser.uid === senderUid ? styles.sent : styles.received,
         ]}>
         <Text style={styles.text}>{text}</Text>
+
         <Text style={styles.createdAt}>
           {moment(createdAt?.seconds * 1000).format('HH:mm')}
         </Text>
+        {isLiked ? <Icon name="heart" size={16} color="red"></Icon> : <></>}
       </TouchableOpacity>
     </View>
   );

@@ -11,6 +11,8 @@ import React, {useEffect, useLayoutEffect} from 'react';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
+import {useRoute} from '@react-navigation/native';
+
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
 
@@ -18,6 +20,7 @@ import auth from '@react-native-firebase/auth';
 
 const WelcomeScreen = props => {
   const navigation = useNavigation();
+  const route = useRoute();
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -57,10 +60,8 @@ const WelcomeScreen = props => {
       isCancelled = true;
     };
   }, []);
- 
 
-  useEffect(() => {
-    console.log('get conversations');
+  useLayoutEffect(() => {
     let isCancelled = false;
     const getConversations = async () => {
       try {
@@ -126,9 +127,7 @@ const WelcomeScreen = props => {
     return () => {
       isCancelled = true;
     };
-  }, []);
-
- 
+  }, [conversations]);
 
   const enterChat = async (userBDisplayName, userBUid) => {
     // console.log(`enter chat with ${userBDisplayName} with a uid of ${userBUid}`);
@@ -253,8 +252,6 @@ const WelcomeScreen = props => {
       )}
 
       <Text>user list</Text>
-
-    
     </View>
   );
 };
