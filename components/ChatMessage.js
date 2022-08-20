@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Modal,
+  Pressable,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -13,15 +14,18 @@ import Icon from 'react-native-vector-icons/AntDesign';
 
 import moment from 'moment';
 const ChatMessage = props => {
-  const {messageId, text, senderUid, createdAt} = props.message;
-  let messages = props.messages;
+  const {messageId, text, senderUid, createdAt, isLiked, reply} = props.message;
+
   const likeMessage = props.likeMessage;
-  let setMessages = props.setMessages;
+  const unLikeMessage = props.unLikeMessage;
+  const deleteMessage = props.deleteMessage;
+  const replyMessage = props.replyMessage;
+
   const [modalToggle, setModalToggle] = useState(false);
-  // const [isLiked, setIsLiked] = useState(true);
+  const [lastPress, setLastPress] = useState(0);
+
 
   const openModal = () => {
-    // setMessageId(messageId);
     requestAnimationFrame(() => {
       setModalToggle(true);
     });
@@ -32,30 +36,22 @@ const ChatMessage = props => {
       setModalToggle(false);
     });
   };
-  const deleteMessage = async messsageId => {
-    try {
-      const result = await firestore()
-        .collection('Messages')
-        .doc(messageId)
-        .delete();
-      console.log('update state');
-
-      setMessages(messages =>
-        messages.filter(message => {
-          if (message.messageId !== messageId) {
-            return message;
-          }
-        }),
-      );
-
-      setModalToggle(false);
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   const forwardMessage = async messageId => {
     console.log('forward message ' + messageId);
+  };
+  const onPress = () => {
+    var time = new Date().getTime();
+    var delta = time - lastPress;
+    const DOUBLE_PRESS_DELAY = 200;
+    if (delta < DOUBLE_PRESS_DELAY) {
+      if (isLiked) {
+        unLikeMessage(messageId);
+      } else {
+        likeMessage(messageId);
+      }
+    }
+    setLastPress(time);
   };
 
   return (
@@ -78,10 +74,12 @@ const ChatMessage = props => {
                 padding: 20,
                 borderRadius: 12,
               }}>
-              {/* {1===1?<Text>hello</Text>} */}
               {senderUid === auth().currentUser.uid && (
                 <TouchableOpacity
-                  onPress={() => deleteMessage(messageId)}
+                  onPress={() => {
+                    deleteMessage(messageId);
+                    closeModal();
+                  }}
                   style={{marginBottom: 5}}>
                   <Text>delete message </Text>
                 </TouchableOpacity>
@@ -92,21 +90,55 @@ const ChatMessage = props => {
                 style={{marginBottom: 5}}>
                 <Text>forward messsage</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
-                onPress={() => likeMessage(messageId)}
+                onPress={() => {
+                  closeModal();
+
+                  replyMessage(messageId, text);
+                }}
                 style={{marginBottom: 5}}>
-                <Text>like messsage</Text>
+                <Text>reply messsage</Text>
               </TouchableOpacity>
+
+              {isLiked ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    unLikeMessage(messageId);
+                    closeModal();
+                  }}
+                  style={{marginBottom: 5}}>
+                  <Text>unlike messsage</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    likeMessage(messageId);
+                    closeModal();
+                  }}
+                  style={{marginBottom: 5}}>
+                  <Text>like messsage</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </TouchableWithoutFeedback>
         </TouchableOpacity>
       </Modal>
       <TouchableOpacity
         onLongPress={openModal}
+        onPress={onPress}
         style={[
           styles.box,
           auth().currentUser.uid === senderUid ? styles.sent : styles.received,
         ]}>
+        {reply ? (
+          <View>
+            <Text>{auth().currentUser.displayName}</Text>
+            <Text styles={{color: 'blue'}}>{reply}</Text>
+          </View>
+        ) : (
+          <></>
+        )}
         <Text style={styles.text}>{text}</Text>
 
         <Text style={styles.createdAt}>

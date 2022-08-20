@@ -29,7 +29,6 @@ const WelcomeScreen = props => {
     console.log('get user profile image url');
     let isCancelled = false;
 
-    //fetch the user's profile image url
     const getUserProfileImageUrl = async () => {
       try {
         if (!isCancelled) {
@@ -72,7 +71,6 @@ const WelcomeScreen = props => {
           let temp = [];
           conversations._docs.forEach(doc => {
             const conversation = doc._data;
-            // console.log(conversation);
             if (
               conversation.participants.includes(auth().currentUser.displayName)
             ) {
@@ -95,7 +93,6 @@ const WelcomeScreen = props => {
               .where('displayName', '==', elem)
               .get();
             const receiver = response._docs[0]._data;
-            // console.log(result);
 
             temp[i].receiver = receiver;
             let messages = [];
@@ -130,7 +127,6 @@ const WelcomeScreen = props => {
   }, [conversations]);
 
   const enterChat = async (userBDisplayName, userBUid) => {
-    // console.log(`enter chat with ${userBDisplayName} with a uid of ${userBUid}`);
 
     try {
       let conversationId;
@@ -170,7 +166,6 @@ const WelcomeScreen = props => {
           .collection('Conversations')
           .doc(conversationId);
         const result = docRef.update({conversationId: conversationId});
-        // console.log(`navigate to conversationId ${conversationId} with senderUid ${user.uid} and receiver is ${userBUid}`);
 
         navigation.navigate('ChatScreen', {
           conversationId: conversationId,
@@ -178,9 +173,7 @@ const WelcomeScreen = props => {
           receiverUid: userBUid,
         });
       } else {
-        // console.log(
-        //   `navigate to conversationId ${convId}   with senderUid ${user.uid} and receiver is ${userBUid}`,
-        // );
+       
 
         navigation.navigate('ChatScreen', {
           conversationId: convId,
@@ -248,10 +241,8 @@ const WelcomeScreen = props => {
           )}
         </ScrollView>
       ) : (
-        <Text>no list</Text>
+        <Text>loading conversation list</Text>
       )}
-
-      <Text>user list</Text>
     </View>
   );
 };

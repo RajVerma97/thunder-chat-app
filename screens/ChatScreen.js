@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import {useState, useEffect, useLayoutEffect} from 'react';
+import {useState, useEffect, useLayoutEffect, useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useRoute} from '@react-navigation/native';
 import firebase from '@react-native-firebase/app';
@@ -19,7 +19,8 @@ import auth from '@react-native-firebase/auth';
 import moment from 'moment';
 import ChatMessage from '../components/ChatMessage';
 import Animated from 'react-native-reanimated';
-import Icon from 'react-native-vector-icons/AntDesign';
+import FontAwesome from 'react-native-vector-icons/FontAwesome5';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 const ChatScreen = props => {
   const navigation = useNavigation();
@@ -29,6 +30,9 @@ const ChatScreen = props => {
   const [receiver, setReceiver] = useState(null);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
+  const inputRef = useRef();
+  const [replyMessageBar, setReplyMessageBar] = useState(false);
+  const [reply, setReply] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -85,16 +89,28 @@ const ChatScreen = props => {
       ),
 
       headerRight: () => (
-        <View style={{flexDirection: 'row'}}>
-          <Text>+</Text>
-          <Text>-</Text>
+        <View
+          style={{
+            width: 100,
+
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <TouchableOpacity>
+            <FontAwesome name="phone" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <FontAwesome name="video" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Entypo name="dots-three-vertical" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       ),
     });
   }, [navigation, receiver]);
 
   useLayoutEffect(() => {
-    console.log('get initial messages');
     let isMounted = true;
     const getMessages = async () => {
       try {
@@ -125,44 +141,114 @@ const ChatScreen = props => {
   // alert(senderUid);
 
   const sendMsg = async text => {
-    //create a msg collection
-    if (text !== '') {
-      const message = {
-        text: text,
-        senderUid: senderUid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        conversationId: conversationId,
-        isLiked:false
-      };
+    try {
+      if (text !== '') {
+        var message;
+        if (reply === '') {
+          message = {
+            text: text,
+            senderUid: senderUid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            conversationId: conversationId,
+            isLiked: false,
+            reply: '',
+          };
+        } else {
+          message = {
+            text: text,
+            senderUid: senderUid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            conversationId: conversationId,
+            isLiked: false,
+            reply: reply,
+          };
+        }
 
-      const response = await firestore().collection('Messages').add(message);
-      let messageId = response.id;
-      const docRef = await firestore().collection('Messages').doc(messageId);
-      // console.log(docRef);
-      const result = await docRef.update({messageId: messageId});
-      const updatedMessage = await firestore()
-        .collection('Messages')
-        .doc(messageId)
-        .get();
-      // setMessages([ {message: message},...messages,]);
-      const me = updatedMessage._data;
-      // console.log(me);
+        const response = await firestore().collection('Messages').add(message);
+        let messageId = response.id;
+        const docRef = await firestore().collection('Messages').doc(messageId);
+        const result = await docRef.update({messageId: messageId});
+        const updatedMessage = await firestore()
+          .collection('Messages')
+          .doc(messageId)
+          .get();
+        const me = updatedMessage._data;
 
-      setMessages([...messages, me]);
-
-      setText('');
+        setMessages([...messages, me]);
+        setReplyMessageBar(false);
+        setReply('');
+        setText('');
+      }
+    } catch (err) {
+      console.log(err);
     }
+
     Keyboard.dismiss();
+
+    //create a msg collection
   };
 
   // const forwardMessage = () => {
   //   console.log('forward message');
   // };
 
-  const likeMessage = async(messageId) => {
-    console.log('like message ' + messageId);
+  const deleteMessage = async messageId => {
+    try {
+      const result = await firestore()
+        .collection('Messages')
+        .doc(messageId)
+        .delete();
+
+      setMessages(messages =>
+        messages.filter(message => {
+          if (message.messageId !== messageId) {
+            return message;
+          }
+        }),
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const likeMessage = async messageId => {
     const messageRef = await firestore().collection('Messages').doc(messageId);
-    const updatedMessage = messageRef.update({ isLiked: true });
+    const updatedMessage = messageRef.update({isLiked: true});
+    setMessages(messages =>
+      messages.filter(message => {
+        if (message.messageId == messageId) {
+          message.isLiked = true;
+        }
+        return messages;
+      }),
+    );
+  };
+
+  const replyMessage = async (messageId, message) => {
+    try {
+      const messageRef = await firestore()
+        .collection('Messages')
+        .doc(messageId);
+
+      setReply(message);
+      inputRef.current.focus();
+      setReplyMessageBar(true);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const unLikeMessage = async messageId => {
+    const messageRef = await firestore().collection('Messages').doc(messageId);
+    const updatedMessage = messageRef.update({isLiked: false});
+    setMessages(messages =>
+      messages.filter(message => {
+        if (message.messageId == messageId) {
+          message.isLiked = false;
+        }
+        return messages;
+      }),
+    );
   };
 
   return (
@@ -178,6 +264,9 @@ const ChatScreen = props => {
                   key={id}
                   message={message}
                   likeMessage={likeMessage}
+                  unLikeMessage={unLikeMessage}
+                  deleteMessage={deleteMessage}
+                  replyMessage={replyMessage}
                 />
               );
             })}
@@ -186,8 +275,19 @@ const ChatScreen = props => {
           <Text>No messages</Text>
         ))}
 
+      {replyMessageBar && (
+        <View style={styles.replyMessageBar}>
+          <Text>reply to {reply}</Text>
+        </View>
+      )}
       <View style={styles.wrapper}>
+        <TouchableOpacity onPress={() => console.log('show bottom sheet')}>
+          <FontAwesome name="camera" color="black" size={30} />
+        </TouchableOpacity>
+
         <TextInput
+          autoFocus={true}
+          ref={inputRef}
           value={text}
           onChangeText={t => setText(t)}
           style={styles.inputMsg}
@@ -207,10 +307,7 @@ const ChatScreen = props => {
         )}
 
         <TouchableOpacity onPress={() => console.log('show bottom sheet')}>
-          <Icon name="picture" color="black" size={30} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => console.log('show bottom sheet')}>
-          <Icon name="gift" color="black" size={40} />
+          <FontAwesome name="gift" color="black" size={30} />
         </TouchableOpacity>
       </View>
     </View>
@@ -245,5 +342,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  replyMessageBar: {
+    position: 'absolute',
+    top: 250,
+    left: 17,
+    width: 200,
+    height: 50,
+    backgroundColor: 'blue',
   },
 });
