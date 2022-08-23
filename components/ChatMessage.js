@@ -1,6 +1,7 @@
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -10,11 +11,15 @@ import {
 import React, {useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
+
 import Icon from 'react-native-vector-icons/AntDesign';
+import Video from 'react-native-video';
 
 import moment from 'moment';
 const ChatMessage = props => {
-  const {messageId, text, senderUid, createdAt, isLiked, reply} = props.message;
+  const {messageId, text, senderUid, createdAt, isLiked, reply, image} =
+    props.message;
 
   const likeMessage = props.likeMessage;
   const unLikeMessage = props.unLikeMessage;
@@ -23,7 +28,45 @@ const ChatMessage = props => {
 
   const [modalToggle, setModalToggle] = useState(false);
   const [lastPress, setLastPress] = useState(0);
+  const [imageUrl, setImageUrl] = useState(null);
 
+  useEffect(() => {
+    const getImageUrl = async () => {
+      try {
+        if (image !== '') {
+          //upload image
+          const uri = image;
+
+          const imageName = uri.substring(uri.lastIndexOf('/') + 1);
+          const uploadUri =
+            Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+
+          const task = storage().ref(imageName).putFile(uploadUri);
+
+          // set progress state
+          task.on('state_changed', snapshot => {
+            // setTransferred(
+            //     Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 10000
+            // );
+          });
+
+          await task;
+
+          const filename = image.split('Pictures/')[1];
+
+          const url = await storage()
+            .ref('/' + filename)
+            .getDownloadURL();
+
+          setImageUrl(prevImageUrl => url);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getImageUrl();
+  }, []);
 
   const openModal = () => {
     requestAnimationFrame(() => {
@@ -43,7 +86,7 @@ const ChatMessage = props => {
   const onPress = () => {
     var time = new Date().getTime();
     var delta = time - lastPress;
-    const DOUBLE_PRESS_DELAY = 200;
+    const DOUBLE_PRESS_DELAY = 300;
     if (delta < DOUBLE_PRESS_DELAY) {
       if (isLiked) {
         unLikeMessage(messageId);
@@ -139,7 +182,30 @@ const ChatMessage = props => {
         ) : (
           <></>
         )}
-        <Text style={styles.text}>{text}</Text>
+        {text ? <Text style={styles.text}>{text}</Text> : <></>}
+        {image !== '' ? (
+          imageUrl ? (
+            <Image
+              style={{width: 200, height: 100}}
+              resizeMode="contain"
+              source={{
+                uri: imageUrl,
+              }}
+            />
+          ) : (
+            <Text>loading image...</Text>
+          )
+        ) : (
+          <></>
+        )}
+
+        {/* <Video
+          source={{
+            uri: 'https://statusguide.com/anykreeg/2021/06/yt1s.com-goku-ultra-instinct-form-WhatsApp-status-video-_1080pFHR.mp4',
+          }}
+          style={{width: 200, height: 200}}
+          paused={false}
+          repeat={true}></Video> */}
 
         <Text style={styles.createdAt}>
           {moment(createdAt?.seconds * 1000).format('HH:mm')}

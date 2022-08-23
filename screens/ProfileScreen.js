@@ -84,7 +84,7 @@ const ProfileScreen = props => {
     ImagePicker.openPicker({
       width: 300,
       height: 400,
-      cropping: true,
+      cropping: false,
     })
       .then(response => {
         const pickedImage = response;

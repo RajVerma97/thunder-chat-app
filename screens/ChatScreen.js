@@ -15,12 +15,15 @@ import {useNavigation} from '@react-navigation/native';
 import {useRoute} from '@react-navigation/native';
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
+
 import auth from '@react-native-firebase/auth';
 import moment from 'moment';
 import ChatMessage from '../components/ChatMessage';
 import Animated from 'react-native-reanimated';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import Entypo from 'react-native-vector-icons/Entypo';
+import ImagePicker from 'react-native-image-crop-picker';
 
 const ChatScreen = props => {
   const navigation = useNavigation();
@@ -33,6 +36,7 @@ const ChatScreen = props => {
   const inputRef = useRef();
   const [replyMessageBar, setReplyMessageBar] = useState(false);
   const [reply, setReply] = useState('');
+  const [clickedImage, setClickedImage] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -46,8 +50,6 @@ const ChatScreen = props => {
             .get();
           const userDoc = response._docs[0]._data;
           setReceiver(prevReceiver => userDoc);
-
-          // console.log(receiver);
         }
       } catch (err) {
         console.log(err);
@@ -137,8 +139,88 @@ const ChatScreen = props => {
     };
   }, []);
 
-  //fetch all messages
-  // alert(senderUid);
+  const uploadImage = async clickedImagePath => {
+    const uri = clickedImagePath;
+
+    const filename = uri.substring(uri.lastIndexOf('/') + 1);
+    const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+    // console.log(uploadUri);
+
+    const task = storage().ref(filename).putFile(uploadUri);
+
+    // set progress state
+    task.on('state_changed', snapshot => {
+      // setTransferred(
+      //     Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 10000
+      // );
+    });
+    try {
+      await task;
+      console.log('uploaded to storage with fileName' + filename);
+
+    } catch (e) {
+      console.error(e);
+    }
+    setClickedImage(null);
+  };
+
+  const openCamera = async () => {
+    console.log('open camera');
+    ImagePicker.openCamera({
+      width: 300,
+      height: 400,
+      cropping: true,
+    })
+      .then(response => {
+        const clickedImagePath = response.path;
+        console.log(clickedImagePath);
+
+        setClickedImage(prevClickedImage => clickedImagePath);
+        // console.log('clicked image state ' + clickedImage);
+
+        //  console.log(clickedImagePath);
+       
+        
+        sendImage(clickedImagePath);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+
+  const sendImage = async clickedImagePath => {
+    console.log('creating a msg with image path  of ' + clickedImagePath);
+    try {
+      if (clickedImagePath) {
+        const message = {
+          text: '',
+          image: clickedImagePath,
+          senderUid: senderUid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          conversationId: conversationId,
+          isLiked: false,
+          reply: '',
+        };
+
+        const response = await firestore().collection('Messages').add(message);
+        let messageId = response.id;
+        const docRef = await firestore().collection('Messages').doc(messageId);
+        const result = await docRef.update({messageId: messageId});
+        const updatedMessage = await firestore()
+          .collection('Messages')
+          .doc(messageId)
+          .get();
+        const me = updatedMessage._data;
+
+        setMessages([...messages, me]);
+
+        setClickedImage(prevClickedImage => null);
+        
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const sendMsg = async text => {
     try {
@@ -147,7 +229,9 @@ const ChatScreen = props => {
         if (reply === '') {
           message = {
             text: text,
+            image: '',
             senderUid: senderUid,
+
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             conversationId: conversationId,
             isLiked: false,
@@ -156,6 +240,7 @@ const ChatScreen = props => {
         } else {
           message = {
             text: text,
+            image: '',
             senderUid: senderUid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             conversationId: conversationId,
@@ -281,7 +366,7 @@ const ChatScreen = props => {
         </View>
       )}
       <View style={styles.wrapper}>
-        <TouchableOpacity onPress={() => console.log('show bottom sheet')}>
+        <TouchableOpacity onPress={() => openCamera()}>
           <FontAwesome name="camera" color="black" size={30} />
         </TouchableOpacity>
 
@@ -349,6 +434,6 @@ const styles = StyleSheet.create({
     left: 17,
     width: 200,
     height: 50,
-    backgroundColor: 'blue',
+    backgroundColor: 'black',
   },
 });

@@ -7,16 +7,20 @@ import {
   Button,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useLayoutEffect} from 'react';
+import React, {useEffect, useLayoutEffect, useRef} from 'react';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import {useRoute} from '@react-navigation/native';
+import Video from 'react-native-video';
+import {Dimensions} from 'react-native';
 
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
 
 import auth from '@react-native-firebase/auth';
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const WelcomeScreen = props => {
   const navigation = useNavigation();
@@ -24,6 +28,18 @@ const WelcomeScreen = props => {
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const videoPlayer = useRef();
+
+  // const goFullScreen = () => {
+  //   console.log('go full screen');
+  //   if (videoPlayer.current) {
+  //     videoPlayer.current.presentFullScreenPlayer();
+  //   }
+  // };
 
   useEffect(() => {
     console.log('get user profile image url');
@@ -127,7 +143,6 @@ const WelcomeScreen = props => {
   }, [conversations]);
 
   const enterChat = async (userBDisplayName, userBUid) => {
-
     try {
       let conversationId;
       const conversations = await firestore().collection('Conversations').get();
@@ -173,8 +188,6 @@ const WelcomeScreen = props => {
           receiverUid: userBUid,
         });
       } else {
-       
-
         navigation.navigate('ChatScreen', {
           conversationId: convId,
           senderUid: user.uid,
@@ -204,6 +217,31 @@ const WelcomeScreen = props => {
         title="get contacts"
         onPress={() => navigation.navigate('ContactScreen')}
       />
+      {/* <Video
+        ref={videoPlayer}
+        source={{
+          uri: 'https://statusguide.com/anykreeg/2021/06/yt1s.com-goku-ultra-instinct-form-WhatsApp-status-video-_1080pFHR.mp4',
+        }}
+        style={[
+          {alignSelf: 'center', width: 300, height: 300},
+          isFullScreen && {width: windowWidth, height: windowHeight},
+        ]}
+        controls={true}
+        paused={!isPlaying}
+        repeat={true}
+        
+        muted={isMuted}></Video> */}
+      {/* <Button
+        title={isPlaying ? 'stop' : 'play'}
+        onPress={() => setIsPlaying(prevIsPlaying => !prevIsPlaying)}></Button>
+      <Button
+        title={isMuted ? 'unmute' : 'mute'}
+        onPress={() => setIsMuted(prevIsMuted => !prevIsMuted)}></Button>
+      <Button
+        title="go full screen"
+        onPress={() =>
+          setIsFullScreen(prevIsFullScreen => !prevIsFullScreen)
+        }></Button> */}
       {conversations ? (
         <ScrollView>
           {conversations.length > 0 ? (
