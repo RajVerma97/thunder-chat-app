@@ -95,7 +95,7 @@ const ContactScreen = () => {
                   temp.thumbnail = contact.thumbnailPath;
                   list.push(temp);
                 });
-                setContacts(prevContacts => list);
+                // setContacts(prevContacts => list);
                 // const userList = setUserList(prevUserList);
                 setUserList(prevUserList => {
                   //   console.log(prevUserList);
@@ -154,10 +154,21 @@ const ContactScreen = () => {
 
       if (isUnique) {
         const conversationsRef = firestore().collection('Conversations');
+        const result2 = await firestore()
+          .collection('Users')
+          .where('uid', '==', userBUid)
+          .get();
+        const receiver = result2._docs[0]._data;
         const response = await firestore()
           .collection('Conversations')
           .add({
             participants: [user.displayName, userBDisplayName],
+            receiverDisplayName: receiver.displayName,
+            receiverPhotoUrl: receiver.photoURL,
+            receiverUid: receiver.uid,
+            lastMessage: '',
+            unSeenNumbers: 0,
+            wallpaper: '',
           });
 
         conversationId = response.id;
@@ -190,12 +201,12 @@ const ContactScreen = () => {
         <ScrollView>
           {userList.length > 0 ? (
             <View>
-              <Text>we have users list</Text>
+              <Text style={{fontSize: 26}}>Your contacts on Thunder</Text>
               {userList.map((x, id) => {
                 return (
                   <ScrollView key={id}>
                     <TouchableOpacity
-                      onPress={() => enterChat(x.displayName, x.uid)}>
+                      onPress={() => createRoom(x.displayName, x.uid)}>
                       <Image
                         style={{width: 50, height: 50}}
                         source={
@@ -222,7 +233,7 @@ const ContactScreen = () => {
         <Text>no list</Text>
       )}
 
-      {loading ? (
+      {/* {loading ? (
         <Text>loading...</Text>
       ) : (
         <ScrollView>
@@ -255,7 +266,7 @@ const ContactScreen = () => {
             <Text>no contacts</Text>
           )}
         </ScrollView>
-      )}
+      )} */}
     </View>
   );
 };

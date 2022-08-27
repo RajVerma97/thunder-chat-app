@@ -12,15 +12,17 @@ import React, {useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-
 import Icon from 'react-native-vector-icons/AntDesign';
 import Video from 'react-native-video';
-
+import FastImage from 'react-native-fast-image';
+import {memo} from 'react';
 import moment from 'moment';
-const ChatMessage = props => {
-  const {messageId, text, senderUid, createdAt, isLiked, reply, image} =
-    props.message;
 
+const ChatMessage = props => {
+  console.log('chat message rendering');
+  const {messageId, text, senderUid, createdAt, isLiked, reply, image, isRead} =
+    props.message;
+  const receiverUid = props.receiverUid;
   const likeMessage = props.likeMessage;
   const unLikeMessage = props.unLikeMessage;
   const deleteMessage = props.deleteMessage;
@@ -29,6 +31,33 @@ const ChatMessage = props => {
   const [modalToggle, setModalToggle] = useState(false);
   const [lastPress, setLastPress] = useState(0);
   const [imageUrl, setImageUrl] = useState(null);
+  const [hasRead, setHasRead] = useState(false);
+
+  useEffect(() => {
+    // if(senderUid===receiver)
+    let isMounted = true;
+    const demo = async () => {
+      try {
+        console.log(`msg is ${text}`);
+        console.log(`sender Uid of this message is ${senderUid}`);
+        console.log(`receiver Uid of  this message is ${receiverUid}`);
+        if (senderUid == receiverUid) {
+          console.log(`read`);
+        }
+        // if (isMounted) {
+        //   if (senderUid === receiverUid) {
+        //     setHasRead(prevHasRead => true);
+        //   }
+        // }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    demo();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const getImageUrl = async () => {
@@ -86,8 +115,9 @@ const ChatMessage = props => {
   const onPress = () => {
     var time = new Date().getTime();
     var delta = time - lastPress;
-    const DOUBLE_PRESS_DELAY = 300;
+    const DOUBLE_PRESS_DELAY = 500;
     if (delta < DOUBLE_PRESS_DELAY) {
+      // console.log('double tap happened');
       if (isLiked) {
         unLikeMessage(messageId);
       } else {
@@ -185,11 +215,11 @@ const ChatMessage = props => {
         {text ? <Text style={styles.text}>{text}</Text> : <></>}
         {image !== '' ? (
           imageUrl ? (
-            <Image
+            <FastImage
               style={{width: 200, height: 100}}
-              resizeMode="contain"
               source={{
                 uri: imageUrl,
+                cache: FastImage.cacheControl.immutable,
               }}
             />
           ) : (
@@ -210,6 +240,8 @@ const ChatMessage = props => {
         <Text style={styles.createdAt}>
           {moment(createdAt?.seconds * 1000).format('HH:mm')}
         </Text>
+        {hasRead ? <Text> read</Text> : <Text> not read</Text>}
+
         {isLiked ? <Icon name="heart" size={16} color="red"></Icon> : <></>}
       </TouchableOpacity>
     </View>
@@ -241,4 +273,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatMessage;
+export default memo(ChatMessage);

@@ -10,6 +10,8 @@ import SplashScreen from './screens/SplashScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import ChatScreen from './screens/ChatScreen';
 import ContactScreen from './screens/ContactScreen';
+import SearchScreen from './screens/SearchScreen';
+import ForwardScreen from './screens/ForwardScreen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
@@ -103,6 +105,36 @@ const AuthNavigation = () => {
             component={ChatScreen}
             options={{
               title: 'Chat Screen',
+              headerShown: true,
+              headerStyle: {
+                backgroundColor: 'lightblue',
+              },
+              headerTintColor: 'black',
+              headerTintStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+          <Stack.Screen
+            name="SearchScreen"
+            component={SearchScreen}
+            options={{
+              title: 'Search Screen',
+              headerShown: true,
+              headerStyle: {
+                backgroundColor: 'lightblue',
+              },
+              headerTintColor: 'black',
+              headerTintStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+          <Stack.Screen
+            name="ForwardScreen"
+            component={ForwardScreen}
+            options={{
+              title: 'Forward Screen',
               headerShown: true,
               headerStyle: {
                 backgroundColor: 'lightblue',

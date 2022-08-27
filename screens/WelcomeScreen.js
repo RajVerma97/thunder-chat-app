@@ -7,27 +7,42 @@ import {
   Button,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useLayoutEffect, useRef} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useCallback} from 'react';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import {useRoute} from '@react-navigation/native';
 import Video from 'react-native-video';
 import {Dimensions} from 'react-native';
-
+import FastImage from 'react-native-fast-image';
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
-
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import auth from '@react-native-firebase/auth';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const WelcomeScreen = props => {
+  console.log('welcome screen rendering');
+  const isFocused = useIsFocused();
   const navigation = useNavigation();
   const route = useRoute();
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [user, setUser] = useState(null);
+  //  {
+  //     conversationId: '',
+  //     participants: [],
+  //     receiverDisplayName: '',
+  //     receiverPhotoUrl: '',
+  //     receiverUid: '',
+  //     lastMessage: '',
+  //     unseenNumbers: 0,
+  //     wallpaper: '',
+  //   },
   const [conversations, setConversations] = useState([]);
+
+  // const [lastMessage, setLastMessage] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -41,8 +56,8 @@ const WelcomeScreen = props => {
   //   }
   // };
 
-  useEffect(() => {
-    console.log('get user profile image url');
+  useLayoutEffect(() => {
+    // console.log('get user profile image url');
     let isCancelled = false;
 
     const getUserProfileImageUrl = async () => {
@@ -74,9 +89,10 @@ const WelcomeScreen = props => {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [profileImageUrl]);
 
   useLayoutEffect(() => {
+    console.log('get conversations inside useEffect');
     let isCancelled = false;
     const getConversations = async () => {
       try {
@@ -84,63 +100,37 @@ const WelcomeScreen = props => {
           const conversations = await firestore()
             .collection('Conversations')
             .get();
+
           let temp = [];
-          conversations._docs.forEach(doc => {
-            const conversation = doc._data;
-            if (
-              conversation.participants.includes(auth().currentUser.displayName)
-            ) {
-              temp.push(conversation);
+          conversations._docs.filter(async doc => {
+            try {
+              const conversation = doc._data;
+              if (
+                conversation.participants.includes(
+                  auth().currentUser.displayName,
+                )
+              ) {
+                temp.push(conversation);
+              }
+            } catch (err) {
+              console.log(err);
             }
           });
-
-          for (let i = 0; i < temp.length; i++) {
-            let elem;
-            if (temp[i].participants[0] == auth().currentUser.displayName) {
-              elem = temp[i].participants[1];
-            } else if (
-              temp[i].participants[1] == auth().currentUser.displayName
-            ) {
-              elem = temp[i].participants[0];
-            }
-
-            const response = await firestore()
-              .collection('Users')
-              .where('displayName', '==', elem)
-              .get();
-            const receiver = response._docs[0]._data;
-
-            temp[i].receiver = receiver;
-            let messages = [];
-
-            const response2 = await firestore()
-              .collection('Messages')
-              .orderBy('createdAt', 'desc')
-              .get();
-            let convId = temp[i].conversationId;
-
-            response2._docs.forEach(doc => {
-              if (doc._data.conversationId == convId) {
-                messages.push(doc._data);
-              }
-            });
-
-            let lastMessage = messages[0]?.text;
-
-            temp[i].lastMessage = lastMessage || 'empty';
-          }
-
-          setConversations(prevConversations => temp);
+          console.log(temp);
+          // setConversations(prevConversations => temp);
         }
       } catch (err) {
         console.log(err);
       }
     };
-    getConversations();
+    if (isFocused) {
+      getConversations();
+    }
+
     return () => {
       isCancelled = true;
     };
-  }, [conversations]);
+  }, [isFocused]);
 
   const enterChat = async (userBDisplayName, userBUid) => {
     try {
@@ -169,10 +159,15 @@ const WelcomeScreen = props => {
 
       if (isUnique) {
         const conversationsRef = firestore().collection('Conversations');
+
+        const receiver = result2._docs[0]._data;
         const response = await firestore()
           .collection('Conversations')
           .add({
             participants: [user.displayName, userBDisplayName],
+            lastMessage: '',
+            unSeenNumbers: 0,
+            wallpaper: '',
           });
 
         conversationId = response.id;
@@ -202,13 +197,22 @@ const WelcomeScreen = props => {
   return (
     <View style={styles.container}>
       <Text>Logged in as {user?.displayName} </Text>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('SearchScreen', {
+            conversations: conversations,
+          })
+        }>
+        <AntDesign name="search1" color="white" size={30} />
+      </TouchableOpacity>
 
-      <Image
+      <FastImage
         style={{width: 200, height: 200}}
         source={{
           uri: profileImageUrl
             ? profileImageUrl
             : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
+          cache: FastImage.cacheControl.immutable,
         }}
       />
 
@@ -250,25 +254,25 @@ const WelcomeScreen = props => {
               {conversations.map((conversation, id) => {
                 return (
                   <ScrollView key={id}>
-                    <Text>{conversation.receiver.displayName}</Text>
+                    <Text>{conversation.receiverDisplayName}</Text>
                     <TouchableOpacity
                       onPress={() =>
                         enterChat(
-                          conversation.receiver.displayName,
-                          conversation.receiver.uid,
+                          conversation.receiverDisplayName,
+                          conversation.receiverUid,
                         )
                       }>
-                      <Image
+                      <FastImage
                         style={{width: 50, height: 50}}
-                        source={
-                          conversation.receiver.photoURL
-                            ? {uri: conversation.receiver.photoURL}
-                            : {
-                                uri: 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-                              }
-                        }
+                        source={{
+                          uri: conversation.receiverPhotoUrl
+                            ? conversation.receiverPhotoUrl
+                            : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
+                          cache: FastImage.cacheControl.immutable,
+                        }}
                       />
-                      <Text>{conversation.lastMessage}</Text>
+                      <Text>last msg--{conversation.lastMessage} </Text>
+                      <Text>unseen Messages--{conversation.unSeenNumbers}</Text>
                     </TouchableOpacity>
                   </ScrollView>
                 );
