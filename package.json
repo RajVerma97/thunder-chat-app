@@ -45,6 +45,7 @@
   "jest": {
     "preset": "react-native"
   },
+ 
   "author": "rajneesh verma",
   "license": "ISC",
   "description": "a chat app"

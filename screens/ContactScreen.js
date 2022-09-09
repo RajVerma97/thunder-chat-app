@@ -206,7 +206,7 @@ const ContactScreen = () => {
                 return (
                   <ScrollView key={id}>
                     <TouchableOpacity
-                      onPress={() => createRoom(x.displayName, x.uid)}>
+                      onPress={() => enterChat(x.displayName, x.uid)}>
                       <Image
                         style={{width: 50, height: 50}}
                         source={
