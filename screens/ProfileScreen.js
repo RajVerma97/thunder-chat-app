@@ -1,30 +1,44 @@
-import React, {useEffect} from 'react';
-import {PermissionsAndroid} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
   View,
+  SafeAreaView,
   Button,
   TextInput,
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
+  PermissionsAndroid,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-// import {updateProfile} from '@react-native-firebase/auth'
 import ImagePicker from 'react-native-image-crop-picker';
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
 import fireStore from '@react-native-firebase/firestore';
-import {useState} from 'react';
-import {LoginContext} from '../Context/LoginContext';
+// import {LoginContext} from '../Context/LoginContext';
 import {useNavigation} from '@react-navigation/native';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+
+var colors = {
+  darkBlue: '#222831',
+  blue: '#3E45DF',
+  grey: '#F1F1F1',
+  white: '#FFFFFF',
+  red: '#E30928',
+  pink: '#F6416C',
+};
 
 const ProfileScreen = props => {
   const navigation = useNavigation();
   const [firstName, setFirstName] = useState(null);
   const [lastName, setLastName] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const uploadImage = async () => {
     const uri = profileImage;
@@ -48,43 +62,55 @@ const ProfileScreen = props => {
   };
 
   async function createProfile() {
+    Keyboard.dismiss();
+    setLoading(prevLoading => true);
+    if (firstName && lastName && profileImage) {
+      const userData = {
+        displayName: `${firstName} ${lastName}`,
+        photoURL: profileImage,
+      };
 
-    const userData = {
-      displayName: `${firstName} ${lastName}`,
-      photoURL: profileImage,
-    };
+      await firebase.auth().currentUser.updateProfile(userData);
 
-    await firebase.auth().currentUser.updateProfile(userData);
+      const loggedInUser = auth().currentUser;
 
-    const loggedInUser = auth().currentUser;
+      const user = {};
+      user.uid = loggedInUser.uid;
+      user.displayName = loggedInUser.displayName;
+      user.photoURL = loggedInUser.photoURL;
+      user.phoneNumber = loggedInUser.phoneNumber;
+      user.lastSignInTime = loggedInUser.metadata.lastSignInTime;
 
-    const user = {};
-    user.uid = loggedInUser.uid;
-    user.displayName = loggedInUser.displayName;
-    user.photoURL = loggedInUser.photoURL;
-    user.phoneNumber = loggedInUser.phoneNumber;
-    user.lastSignInTime = loggedInUser.metadata.lastSignInTime;
+      uploadImage();
 
-    uploadImage();
+      const firestore = firebase.firestore();
 
-    const firestore = firebase.firestore();
+      const userCollection = fireStore().collection('Users');
 
-    const userCollection = fireStore().collection('Users');
+      userCollection
+        .add(user)
+        .then(() => {})
+        .catch(err => console.log(err));
+      setLoading(prevLoading => false);
 
-    userCollection
-      .add(user)
-      .then(() => {
-        // console.log('user added to firestore');
-      })
-      .catch(err => console.log(err));
-    navigation.navigate('WelcomeScreen');
+      navigation.navigate('WelcomeScreen');
+    } else {
+      setLoading(prevLoading => false);
+      if (!firstName) {
+        setError(prevError => " first name can't be blank");
+      } else if (!lastName) {
+        setError(prevError => " last name can't be blank");
+      } else if (!profileImage) {
+        setError(prevError => ' choose a profile image');
+      }
+    }
   }
 
   const selectImage = () => {
     ImagePicker.openPicker({
       width: 300,
       height: 400,
-      cropping: false,
+      cropping: true,
     })
       .then(response => {
         const pickedImage = response;
@@ -98,19 +124,22 @@ const ProfileScreen = props => {
   };
 
   return (
-    <View style={styles.screen}>
-      <View style={{marginTop: 30}}>
-        <Button title="Signout" onPress={() => auth().signOut()} />
-      </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.wrapper}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <FeatherIcon
+            style={styles.wrapper__backArrowIcon}
+            name="chevron-left"
+          />
+        </TouchableOpacity>
 
-      <Text style={styles.text}> Create Your Profile </Text>
-
-      <View>
+        <Text style={styles.wrapper__title}> create profile</Text>
         <TouchableOpacity
           style={styles.profileImageContainer}
           onPress={selectImage}>
           {profileImage !== null ? (
             <Image
+              style={styles.profileImage}
               source={{
                 width: '100%',
                 height: '100%',
@@ -119,14 +148,7 @@ const ProfileScreen = props => {
               }}
             />
           ) : (
-            <Image
-              source={{
-                width: '100%',
-                height: '100%',
-                borderRadius: 50,
-                uri: 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-              }}
-            />
+            <FeatherIcon name="upload" style={styles.uploadIcon} />
           )}
         </TouchableOpacity>
 
@@ -134,63 +156,137 @@ const ProfileScreen = props => {
           value={firstName}
           onChangeText={text => setFirstName(text)}
           style={styles.input}
-          placeholder="first name"
+          placeholder="First Name"
+          placeholderTextColor={'#1E1E1E'}
         />
         <TextInput
           value={lastName}
           onChangeText={text => setLastName(text)}
           style={styles.input}
-          placeholder="last name"
+          placeholder="Last Name"
+          placeholderTextColor={'#1E1E1E'}
         />
-        <TouchableOpacity
-          style={styles.createProfileBtn}
-          onPress={() => {
-            createProfile();
-          }}>
-          <Text style={styles.createProfileBtnText}>Create</Text>
-        </TouchableOpacity>
+
+        {error && <Text style={styles.errorText}>{error}</Text>}
+        {loading && <ActivityIndicator size={40} />}
+
+        {!loading && (
+          <TouchableOpacity
+            style={styles.createProfileBtn}
+            onPress={() => {
+              createProfile();
+            }}>
+            <Text style={styles.createProfileBtn__text}>continue</Text>
+            <FeatherIcon style={styles.createProfileBtn__icon} name="send" />
+          </TouchableOpacity>
+        )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
+    backgroundColor: colors.darkBlue,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'black',
+    padding: 10,
   },
-  input: {
-    borderWidth: 2,
-    borderColor: 'lightblue',
-    width: 200,
-    marginVertical: 30,
-    fontSize: 25,
-    padding: 8,
-    borderRadius: 8,
+
+  wrapper: {
+    width: '100%',
+    height: 650,
+    backgroundColor: colors.white,
+    borderTopRightRadius: 16,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    overflow: 'hidden',
+    padding: 20,
   },
-  text: {
-    fontSize: 25,
+
+  wrapper__backArrowIcon: {
+    fontSize: 40,
+    marginBottom: 30,
+    color: '#000000',
   },
-  createProfileBtn: {
-    width: 100,
-    height: 50,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
+
+  wrapper__title: {
+    fontSize: 40,
+    fontWeight: '900',
+    fontFamily: 'Inter-Bold',
+    textTransform: 'capitalize',
+    color: '#000000',
+    marginBottom: 12,
   },
-  createProfileBtnText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'black',
-  },
+
   profileImageContainer: {
-    width: 100,
-    height: 100,
+    marginVertical: 30,
+    // borderColor: 'red',
+    // borderWidth: 5,
+    width: 120,
+    height: 120,
+    borderRadius: 100,
+    alignSelf: 'center',
+    backgroundColor: colors.darkBlue,
+    elevation: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 100,
+  },
+  uploadIcon: {
+    color: 'white',
+    fontSize: 35,
+  },
+
+  input: {
+    borderColor: colors.darkBlue,
+    borderWidth: 1,
     borderRadius: 50,
-    backgroundColor: 'grey',
+    marginBottom: 20,
+    fontSize: 18,
+    fontFamily: 'Inter-Regular',
+    fontWeight: '500',
+    paddingHorizontal: 25,
+    paddingVertical: 12,
+    color: '#1E1E1E',
+  },
+  errorText: {
+    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
+    fontSize: 20,
+    color: '#E30928',
+    marginBottom: 30,
+  },
+
+  createProfileBtn: {
+    width: 180,
+    height: 70,
+    backgroundColor: colors.blue,
+    padding: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 50,
+    alignSelf: 'center',
+  },
+  createProfileBtn__text: {
+    fontWeight: '700',
+    fontFamily: 'Inter-bold',
+    fontSize: 22,
+    color: colors.white,
+  },
+
+  createProfileBtn__icon: {
+    fontSize: 22,
+    color: colors.white,
+    transform: [{rotate: '45deg'}],
   },
 });
 

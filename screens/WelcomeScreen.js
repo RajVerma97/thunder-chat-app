@@ -5,10 +5,16 @@ import {
   Image,
   ScrollView,
   Button,
+  SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useLayoutEffect, useRef, useCallback} from 'react';
-import {useState} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useIsFocused} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
@@ -19,15 +25,18 @@ import FastImage from 'react-native-fast-image';
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import FeatherIcon from 'react-native-vector-icons/Feather';
 import auth from '@react-native-firebase/auth';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+import Conversation from '../components/Conversation';
 
 const WelcomeScreen = props => {
-  console.log('welcome screen rendering');
+  // console.log('welcome screen rendering');
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const route = useRoute();
+
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [user, setUser] = useState(null);
   //  {
@@ -57,39 +66,32 @@ const WelcomeScreen = props => {
   // };
 
   useLayoutEffect(() => {
-    // console.log('get user profile image url');
-    let isCancelled = false;
+    navigation.setOptions({
+      title: 'Thunder',
+      headerRight: () => (
+        <View
+          style={{
+            // flex:1,
+            // width: 100,
+            // backgroundColor: 'pink',
 
-    const getUserProfileImageUrl = async () => {
-      try {
-        if (!isCancelled) {
-          const response = await firestore()
-            .collection('Users')
-            .where('uid', '==', auth().currentUser.uid.toString())
-            .get();
-          const userDoc = response.docs[0]._data;
-          if (userDoc && userDoc.photoURL) {
-            const photoURL = userDoc.photoURL;
+            flexDirection: 'row',
+            // justifyContent: '',
+            alignItems: 'center',
+            padding: 12,
+          }}>
+          <TouchableOpacity onPress={() => navigation.navigate('SearchScreen')}>
+            <FeatherIcon name="search" color="white" size={26} />
+          </TouchableOpacity>
+          {/* <TouchableOpacity>
+            <FeatherIcon name="moon" color="white" size={26} />
+          </TouchableOpacity> */}
+        </View>
+      ),
+    });
+  }, [navigation]);
 
-            setUser(prevUser => userDoc);
-
-            const filename = photoURL.split('Pictures/')[1];
-            const url = await storage()
-              .ref('/' + filename)
-              .getDownloadURL();
-
-            setProfileImageUrl(prevProfileImageUrl => url);
-          }
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    getUserProfileImageUrl();
-    return () => {
-      isCancelled = true;
-    };
-  }, [profileImageUrl]);
+ 
 
   useLayoutEffect(() => {
     console.log('get conversations inside useEffect');
@@ -117,7 +119,7 @@ const WelcomeScreen = props => {
             }
           });
           console.log(temp);
-          // setConversations(prevConversations => temp);
+          setConversations(prevConversations => temp);
         }
       } catch (err) {
         console.log(err);
@@ -195,106 +197,131 @@ const WelcomeScreen = props => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Logged in as {user?.displayName} </Text>
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate('SearchScreen', {
-            conversations: conversations,
-          })
-        }>
-        <AntDesign name="search1" color="white" size={30} />
-      </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.conversationContainer}>
+        {conversations.length > 0 &&
+          conversations.map((conversation, index) => {
+            return (
+              <TouchableOpacity
+                key={index}
+                onPress={() =>
+                  enterChat(
+                    conversation.receiverDisplayName,
+                    conversation.receiverUid,
+                  )
+                }>
+                <Conversation conversation={conversation} />
+              </TouchableOpacity>
+            );
+            return;
+          })}
 
-      <FastImage
-        style={{width: 200, height: 200}}
-        source={{
-          uri: profileImageUrl
-            ? profileImageUrl
-            : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-          cache: FastImage.cacheControl.immutable,
-        }}
-      />
+        {/* {conversations.length > 0 &&
+          conversations.map((conversation, index) => {
+            //  return <Conversation conversation={conversation} key={index} />;
+            <Text style={{color: 'black'}}>hey</Text>;
+          })} */}
+      </ScrollView>
+    </SafeAreaView>
+    // <View style={styles.container}>
+    //   <Text>Logged in as {user?.displayName} </Text>
+    //   <TouchableOpacity
+    //     onPress={() =>
+    //       navigation.navigate('SearchScreen', {
+    //         conversations: conversations,
+    //       })
+    //     }>
+    //     <AntDesign name="search1" color="white" size={30} />
+    //   </TouchableOpacity>
 
-      <Button title="sign out" onPress={() => auth().signOut()}></Button>
-      <Button
-        title="get contacts"
-        onPress={() => navigation.navigate('ContactScreen')}
-      />
-      {/* <Video
-        ref={videoPlayer}
-        source={{
-          uri: 'https://statusguide.com/anykreeg/2021/06/yt1s.com-goku-ultra-instinct-form-WhatsApp-status-video-_1080pFHR.mp4',
-        }}
-        style={[
-          {alignSelf: 'center', width: 300, height: 300},
-          isFullScreen && {width: windowWidth, height: windowHeight},
-        ]}
-        controls={true}
-        paused={!isPlaying}
-        repeat={true}
-        
-        muted={isMuted}></Video> */}
-      {/* <Button
-        title={isPlaying ? 'stop' : 'play'}
-        onPress={() => setIsPlaying(prevIsPlaying => !prevIsPlaying)}></Button>
-      <Button
-        title={isMuted ? 'unmute' : 'mute'}
-        onPress={() => setIsMuted(prevIsMuted => !prevIsMuted)}></Button>
-      <Button
-        title="go full screen"
-        onPress={() =>
-          setIsFullScreen(prevIsFullScreen => !prevIsFullScreen)
-        }></Button> */}
-      {conversations ? (
-        <ScrollView>
-          {conversations.length > 0 ? (
-            <View>
-              <Text>we have a conversations list</Text>
-              {conversations.map((conversation, id) => {
-                return (
-                  <ScrollView key={id}>
-                    <Text>{conversation.receiverDisplayName}</Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        enterChat(
-                          conversation.receiverDisplayName,
-                          conversation.receiverUid,
-                        )
-                      }>
-                      <FastImage
-                        style={{width: 50, height: 50}}
-                        source={{
-                          uri: conversation.receiverPhotoUrl
-                            ? conversation.receiverPhotoUrl
-                            : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-                          cache: FastImage.cacheControl.immutable,
-                        }}
-                      />
-                      <Text>last msg--{conversation.lastMessage} </Text>
-                      <Text>unseen Messages--{conversation.unSeenNumbers}</Text>
-                    </TouchableOpacity>
-                  </ScrollView>
-                );
-              })}
-            </View>
-          ) : (
-            <Text>conversation list is empty</Text>
-          )}
-        </ScrollView>
-      ) : (
-        <Text>loading conversation list</Text>
-      )}
-    </View>
+    //   <FastImage
+    //     style={{width: 200, height: 200}}
+    //     source={{
+    //       uri: profileImageUrl
+    //         ? profileImageUrl
+    //         : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
+    //       cache: FastImage.cacheControl.immutable,
+    //     }}
+    //   />
+
+    //   <Button title="sign out" onPress={() => auth().signOut()}></Button>
+    //   <Button
+    //     title="get contacts"
+    //     onPress={() => navigation.navigate('ContactScreen')}
+    //   />
+    //   {/* <Video
+    //     ref={videoPlayer}
+    //     source={{
+    //       uri: 'https://statusguide.com/anykreeg/2021/06/yt1s.com-goku-ultra-instinct-form-WhatsApp-status-video-_1080pFHR.mp4',
+    //     }}
+    //     style={[
+    //       {alignSelf: 'center', width: 300, height: 300},
+    //       isFullScreen && {width: windowWidth, height: windowHeight},
+    //     ]}
+    //     controls={true}
+    //     paused={!isPlaying}
+    //     repeat={true}
+
+    //     muted={isMuted}></Video> */}
+    //   {/* <Button
+    //     title={isPlaying ? 'stop' : 'play'}
+    //     onPress={() => setIsPlaying(prevIsPlaying => !prevIsPlaying)}></Button>
+    //   <Button
+    //     title={isMuted ? 'unmute' : 'mute'}
+    //     onPress={() => setIsMuted(prevIsMuted => !prevIsMuted)}></Button>
+    //   <Button
+    //     title="go full screen"
+    //     onPress={() =>
+    //       setIsFullScreen(prevIsFullScreen => !prevIsFullScreen)
+    //     }></Button> */}
+    //   {conversations ? (
+    //     <ScrollView>
+    //       {conversations.length > 0 ? (
+    //         <View>
+    //           <Text>we have a conversations list</Text>
+    //           {conversations.map((conversation, id) => {
+    //             return (
+    //               <ScrollView key={id}>
+    //                 <Text>{conversation.receiverDisplayName}</Text>
+    //                 <TouchableOpacity
+    //                   onPress={() =>
+    //                     enterChat(
+    //                       conversation.receiverDisplayName,
+    //                       conversation.receiverUid,
+    //                     )
+    //                   }>
+    //                   <FastImage
+    //                     style={{width: 50, height: 50}}
+    //                     source={{
+    //                       uri: conversation.receiverPhotoUrl
+    //                         ? conversation.receiverPhotoUrl
+    //                         : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
+    //                       cache: FastImage.cacheControl.immutable,
+    //                     }}
+    //                   />
+    //                   <Text>last msg--{conversation.lastMessage} </Text>
+    //                   <Text>unseen Messages--{conversation.unSeenNumbers}</Text>
+    //                 </TouchableOpacity>
+    //               </ScrollView>
+    //             );
+    //           })}
+    //         </View>
+    //       ) : (
+    //         <Text>conversation list is empty</Text>
+    //       )}
+    //     </ScrollView>
+    //   ) : (
+    //     <Text>loading conversation list</Text>
+    //   )}
+    // </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#F1F1F1',
+    padding: 10,
   },
 });
 

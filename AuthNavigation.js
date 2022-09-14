@@ -8,14 +8,50 @@ import VerifyOtpScreen from './screens/VerifyOtpScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import ChatScreen from './screens/ChatScreen';
 import ContactScreen from './screens/ContactScreen';
 import SearchScreen from './screens/SearchScreen';
 import ForwardScreen from './screens/ForwardScreen';
+import CustomDrawer from './components/CustomDrawer';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-
+import {createDrawerNavigator} from '@react-navigation/drawer';
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
+
+const Root = () => {
+  <Stack.Navigator>
+    <Stack.Screen
+      name="ContactScreen"
+      component={ContactScreen}
+      options={{
+        title: 'ContactScreen',
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#222831',
+        },
+        headerTintColor: 'white',
+      }}
+    />
+
+    <Stack.Screen
+      name="ChatScreen"
+      component={ChatScreen}
+      options={{
+        title: 'Chat Screen',
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#222831',
+        },
+        headerTintColor: 'white',
+        headerTintStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+  </Stack.Navigator>;
+};
 
 const AuthNavigation = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -65,9 +101,9 @@ const AuthNavigation = () => {
           />
         </Stack.Navigator>
       ) : (
-        <Stack.Navigator
-          initialRouteName="SplashScreen"
-          screenOptions={screenOption}>
+        <Drawer.Navigator
+          initialRouteName="WelcomeScreen"
+          drawerContent={props => <CustomDrawer {...props} />}>
           {!currentUser.displayName && (
             <Stack.Screen
               name="ProfileScreen"
@@ -78,74 +114,34 @@ const AuthNavigation = () => {
               }}
             />
           )}
-          <Stack.Screen
+          <Drawer.Screen
             name="WelcomeScreen"
             component={WelcomeScreen}
             options={{
-              title: 'Thunder',
+              title: 'Home Screen',
               headerShown: true,
               headerStyle: {
-                backgroundColor: 'lightblue',
+                backgroundColor: '#222831',
               },
+              headerTintColor: 'white',
             }}
           />
-          <Stack.Screen
-            name="ContactScreen"
-            component={ContactScreen}
+          <Drawer.Screen
+            name="SettingsScreen"
+            component={SettingsScreen}
             options={{
-              title: 'ContactScreen',
+              title: 'settings',
               headerShown: true,
               headerStyle: {
-                backgroundColor: 'lightblue',
+                backgroundColor: '#222831',
               },
-            }}
-          />
-          <Stack.Screen
-            name="ChatScreen"
-            component={ChatScreen}
-            options={{
-              title: 'Chat Screen',
-              headerShown: true,
-              headerStyle: {
-                backgroundColor: 'lightblue',
-              },
-              headerTintColor: 'black',
+              headerTintColor: 'white',
               headerTintStyle: {
                 fontWeight: 'bold',
               },
             }}
           />
-          <Stack.Screen
-            name="SearchScreen"
-            component={SearchScreen}
-            options={{
-              title: 'Search Screen',
-              headerShown: true,
-              headerStyle: {
-                backgroundColor: 'lightblue',
-              },
-              headerTintColor: 'black',
-              headerTintStyle: {
-                fontWeight: 'bold',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="ForwardScreen"
-            component={ForwardScreen}
-            options={{
-              title: 'Forward Screen',
-              headerShown: true,
-              headerStyle: {
-                backgroundColor: 'lightblue',
-              },
-              headerTintColor: 'black',
-              headerTintStyle: {
-                fontWeight: 'bold',
-              },
-            }}
-          />
-        </Stack.Navigator>
+        </Drawer.Navigator>
       )}
     </NavigationContainer>
   );

@@ -15,39 +15,39 @@ import firestore from '@react-native-firebase/firestore';
 const SearchScreen = props => {
   const navigation = useNavigation();
   const route = useRoute();
-  var conversations = route.params.conversations;
+  // var conversations = route.params.conversations;
 
   const [searchText, setSearchText] = useState('');
   const [data, setData] = useState([]);
 
-  useEffect(() => {
-    const func = async () => {
-      conversations.forEach(conversation => {
-        //get the messages for teh conversation
-        const conversationId = conversation.conversationId;
+  // useEffect(() => {
+  //   const func = async () => {
+  //     conversations.forEach(conversation => {
+  //       //get the messages for teh conversation
+  //       const conversationId = conversation.conversationId;
 
-        // const response = await firestore()
-        //   .collection('Messages')
-        //   .where('conversationId', '==', conversationId)
-        //   .orderBy('createdAt', 'asc')
-        //   .get();
-            // var messages = [];
-            // if (snapshot && snapshot._docs) {
-            //   snapshot._docs.map(doc => messages.push(doc._data));
-            // }
-            // // console.log(messages);
+  //       // const response = await firestore()
+  //       //   .collection('Messages')
+  //       //   .where('conversationId', '==', conversationId)
+  //       //   .orderBy('createdAt', 'asc')
+  //       //   .get();
+  //           // var messages = [];
+  //           // if (snapshot && snapshot._docs) {
+  //           //   snapshot._docs.map(doc => messages.push(doc._data));
+  //           // }
+  //           // // console.log(messages);
 
-            // conversation.messages = messages;
-        
-      });
-      console.log(conversations);
-    };
-    func();
-  }, []);
+  //           // conversation.messages = messages;
 
-  const search = searchText => {
-    console.log('search for ' + searchText);
-  };
+  //     });
+  //     console.log(conversations);
+  //   };
+  //   func();
+  // }, []);
+
+  // const search = searchText => {
+  //   console.log('search for ' + searchText);
+  // };
 
   return (
     <View style={styles.container}>
@@ -64,6 +64,7 @@ const SearchScreen = props => {
         onChangeText={t => setSearchText(t)}
         onSubmitEditing={() => search(searchText)}
       />
+      <Text>search screen</Text>
     </View>
   );
 };
