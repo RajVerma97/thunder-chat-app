@@ -12,16 +12,28 @@ import React, {useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import Icon from 'react-native-vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import Video from 'react-native-video';
 import FastImage from 'react-native-fast-image';
 import {memo} from 'react';
 import moment from 'moment';
-
+import {set} from 'react-native-reanimated';
+import FontAwesome from 'react-native-vector-icons/FontAwesome5';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+import DoubleCheck from './DoubleCheck';
 const ChatMessage = props => {
-  console.log('chat message rendering');
-  const {messageId, text, senderUid, createdAt, isLiked, reply, image, isRead} =
-    props.message;
+  // console.log('chat message rendering');
+  const {
+    messageId,
+    text,
+    senderUid,
+    createdAt,
+    isLiked,
+    reply,
+    image,
+    isRead,
+    conversationId,
+  } = props.message;
   const receiverUid = props.receiverUid;
   const likeMessage = props.likeMessage;
   const unLikeMessage = props.unLikeMessage;
@@ -37,20 +49,21 @@ const ChatMessage = props => {
     // if(senderUid===receiver)
     let isMounted = true;
     const demo = async () => {
-      try {
-        console.log(`msg is ${text}`);
-        console.log(`sender Uid of this message is ${senderUid}`);
-        console.log(`receiver Uid of  this message is ${receiverUid}`);
-        if (senderUid == receiverUid) {
-          console.log(`read`);
-        }
-        // if (isMounted) {
-        //   if (senderUid === receiverUid) {
-        //     setHasRead(prevHasRead => true);
-        //   }
-        // }
-      } catch (err) {
-        console.log(err);
+      if (auth().currentUser.uid !== senderUid) {
+        //receiver
+        //  handleNotification(message);
+
+        const doc = await firestore()
+          .collection('Messages')
+          .doc(messageId)
+          .update({isRead: true});
+
+        // const doc=await firestore().collection('Conversations').doc(conversat)
+        setHasRead(prevHasRead => true);
+
+        //update the seen just now
+      } else {
+        // console.log('sender');
       }
     };
     demo();
@@ -110,7 +123,7 @@ const ChatMessage = props => {
   };
 
   const forwardMessage = async messageId => {
-    console.log('forward message ' + messageId);
+    // console.log('forward message ' + messageId);
   };
   const onPress = () => {
     var time = new Date().getTime();
@@ -212,7 +225,17 @@ const ChatMessage = props => {
         ) : (
           <></>
         )}
-        {text ? <Text style={styles.text}>{text}</Text> : <></>}
+        {text && (
+          <Text
+            style={[
+              styles.text,
+              auth().currentUser.uid === senderUid
+                ? styles.sentText
+                : styles.receivedText,
+            ]}>
+            {text}
+          </Text>
+        )}
         {image !== '' ? (
           imageUrl ? (
             <FastImage
@@ -236,13 +259,35 @@ const ChatMessage = props => {
           style={{width: 200, height: 200}}
           paused={false}
           repeat={true}></Video> */}
+        <View style={{flexDirection: 'row', alignSelf: 'flex-end'}}>
+          <Text
+            style={[
+              styles.createdAt,
+              auth().currentUser.uid === senderUid
+                ? styles.sentCreatedAt
+                : styles.receivedCreatedAt,
+            ]}>
+            {moment(createdAt?.seconds * 1000).format('HH:mm')}
+          </Text>
+          {hasRead ? (
+            <DoubleCheck />
+          ) : (
+            <FeatherIcon style={styles.singleCheck} name="check" />
+          )}
 
-        <Text style={styles.createdAt}>
-          {moment(createdAt?.seconds * 1000).format('HH:mm')}
-        </Text>
-        {hasRead ? <Text> read</Text> : <Text> not read</Text>}
-
-        {isLiked ? <Icon name="heart" size={16} color="red"></Icon> : <></>}
+          {isLiked && (
+            <AntDesign
+              style={[
+                styles.heartIcon,
+                auth().currentUser.uid === senderUid
+                  ? styles.sentHeartIcon
+                  : styles.receiverHeartIcon,
+              ]}
+              name="heart"
+              size={16}
+            />
+          )}
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -250,26 +295,64 @@ const ChatMessage = props => {
 const styles = StyleSheet.create({
   box: {
     maxWidth: 200,
-    marginBottom: 10,
-    padding: 8,
+    marginBottom: 30,
+    // padding: 12,
     borderRadius: 12,
     alignSelf: 'flex-start',
+
+    // elevation: 1,
   },
   sent: {
-    backgroundColor: 'lightblue',
+    // borderWidth: 2,
+    // borderColor: '#3E45DF',
     alignSelf: 'flex-end',
   },
   received: {
-    backgroundColor: 'lightgrey',
+    //  backgroundColor: 'blue',
   },
   text: {
-    color: 'black',
     fontSize: 16,
+    borderRadius: 100,
+    padding: 15,
+
+    fontFamily: 'Inter-Semibold',
+    textAlign: 'center',
+    // elevation: 5,
+  },
+  sentText: {
+    // borderWidth: 2,
+    // borderColor: 'black',
+
+    color: 'white',
+    backgroundColor: '#5F6F94',
+  },
+  receivedText: {
+    // borderWidth: 2,
+    // borderColor: 'lightblue',
+    backgroundColor: '#222831',
+    color: 'white',
   },
   createdAt: {
+    fontSize: 10,
+    fontFamily: 'Inter-Regular',
+    marginRight: 5,
+  },
+  sentCreatedAt: {
     color: 'black',
-    fontSize: 12,
-    color: 'grey',
+  },
+  receivedCreatedAt: {
+    color: 'black',
+  },
+  singleCheck: {
+    marginRight: 5,
+    color: 'black',
+  },
+  heartIcon: {},
+  sentHeartIcon: {
+    color: '#F6416C',
+  },
+  receiverHeartIcon: {
+    color: '#F6416C',
   },
 });
 

@@ -2,18 +2,22 @@ import {
   StyleSheet,
   Text,
   View,
+  SafeAreaView,
   FlatList,
   ScrollView,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, memo, useContext} from 'react';
 import auth from '@react-native-firebase/auth';
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import {PermissionsAndroid} from 'react-native';
 import Contacts from 'react-native-contacts';
 import {useNavigation} from '@react-navigation/native';
+import Contact from '../components/Contact';
+import {ConversationsContext} from '../Context/ConversationsContext';
 
 const ContactScreen = () => {
   const navigation = useNavigation();
@@ -21,15 +25,18 @@ const ContactScreen = () => {
   const [userList, setUserList] = useState(null);
   const [loading, setLoading] = useState(false);
   const [contacts, setContacts] = useState('');
+  // const {conversations, setConversations} = useContext(ConversationsContext);
+
   const user = auth().currentUser;
 
   useEffect(() => {
     //fetch all other users in the database
     let isCancelled = false;
     const getUserList = async () => {
+      setLoading(true);
       try {
         if (!isCancelled) {
-          console.log('get user list from db');
+          // console.log('get user list from db');
 
           const response = await firestore()
             .collection('Users')
@@ -56,9 +63,8 @@ const ContactScreen = () => {
 
   useEffect(() => {
     let isCancelled = false;
-    console.log('get contacts');
+    // console.log('get contacts');
     const getContacts = async () => {
-      setLoading(true);
       try {
         if (!isCancelled) {
           const androidContactPermission = await PermissionsAndroid.request(
@@ -73,7 +79,7 @@ const ContactScreen = () => {
           );
 
           if (androidContactPermission === PermissionsAndroid.RESULTS.GRANTED) {
-            console.log('contacts permission granted');
+            // console.log('contacts permission granted');
             Contacts.getAll()
               .then(response => {
                 //show all contacts
@@ -142,7 +148,11 @@ const ContactScreen = () => {
         let temp = [user.displayName, userBDisplayName];
         let participants = conversation.participants;
 
-        if (participants.includes(temp[0]) && participants.includes(temp[1])) {
+        if (
+          (participants[0].uid === user.uid &&
+            participants[1].uid === userBUid) ||
+          (participants[1].uid === user.uid && participants[0].uid === userBUid)
+        ) {
           isDuplicate = true;
           convId = conversation.conversationId;
         }
@@ -156,38 +166,61 @@ const ContactScreen = () => {
         const conversationsRef = firestore().collection('Conversations');
         const result2 = await firestore()
           .collection('Users')
+          .where('uid', '==', user.uid)
+          .get();
+        const creator = result2._docs[0]._data;
+
+        const result3 = await firestore()
+          .collection('Users')
           .where('uid', '==', userBUid)
           .get();
-        const receiver = result2._docs[0]._data;
-        const response = await firestore()
-          .collection('Conversations')
-          .add({
-            participants: [user.displayName, userBDisplayName],
-            receiverDisplayName: receiver.displayName,
-            receiverPhotoUrl: receiver.photoURL,
-            receiverUid: receiver.uid,
-            lastMessage: '',
-            unSeenNumbers: 0,
-            wallpaper: '',
-          });
+        const sideUser = result3._docs[0]._data;
+        const participants = [creator, sideUser];
+
+        const response = await firestore().collection('Conversations').add({
+          participants: participants,
+          messages: [],
+          lastMessage: {},
+          unSeenNumbers: 0,
+
+          wallpaper: '',
+        });
 
         conversationId = response.id;
 
         const docRef = await firestore()
           .collection('Conversations')
           .doc(conversationId);
-        const result = docRef.update({conversationId: conversationId});
+        const result = docRef.update({
+          conversationId: conversationId,
+        });
+        // console.log(result);
+        const res1 = await firestore()
+          .collection('Conversations')
+          .doc(conversationId)
+          .get();
+        const conversation = res1._data;
+        // console.log(conversation);
+        // setConversations(prevConversations => [
+        //   ...prevConversations,
+        //   conversation,
+        // ]);
 
         navigation.navigate('ChatScreen', {
           conversationId: conversationId,
-          senderUid: user.uid,
-          receiverUid: userBUid,
+          conversation: conversation,
         });
       } else {
+        const result = await firestore()
+          .collection('Conversations')
+          .doc(convId)
+          .get();
+        const conversation = result._data;
+        // console.log(conversation);
+
         navigation.navigate('ChatScreen', {
           conversationId: convId,
-          senderUid: user.uid,
-          receiverUid: userBUid,
+          conversation: conversation,
         });
       }
     } catch (err) {
@@ -196,95 +229,49 @@ const ContactScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {userList ? (
-        <ScrollView>
-          {userList.length > 0 ? (
-            <View>
-              <Text style={{fontSize: 26}}>Your contacts on Thunder</Text>
-              {userList.map((x, id) => {
-                return (
-                  <ScrollView key={id}>
-                    <TouchableOpacity
-                      onPress={() => enterChat(x.displayName, x.uid)}>
-                      <Image
-                        style={{width: 50, height: 50}}
-                        source={
-                          x.photoURL
-                            ? {uri: x.photoURL}
-                            : {
-                                uri: 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-                              }
-                        }
-                      />
-                      <Text>
-                        {x.displayName} {x.phoneNumber}
-                      </Text>
-                    </TouchableOpacity>
-                  </ScrollView>
-                );
-              })}
-            </View>
-          ) : (
-            <Text>user list is empty</Text>
-          )}
-        </ScrollView>
-      ) : (
-        <Text>no list</Text>
-      )}
-
-      {/* {loading ? (
-        <Text>loading...</Text>
-      ) : (
-        <ScrollView>
-          {contacts.length > 0 ? (
-            <View>
-              <Text>we have contacts</Text>
-              {contacts.map((contact, id) => {
-                return (
-                  <ScrollView key={id}>
-                    <View>
-                      <Image
-                        style={{width: 50, height: 50}}
-                        source={
-                          contact.thumbnail
-                            ? {uri: contact.thumbnail}
-                            : {
-                                uri: 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-                              }
-                        }
-                      />
-                      <Text>
-                        {contact.displayName} {contact.phoneNumber}
-                      </Text>
-                    </View>
-                  </ScrollView>
-                );
-              })}
-            </View>
-          ) : (
-            <Text>no contacts</Text>
-          )}
-        </ScrollView>
-      )} */}
-    </View>
+    <SafeAreaView style={styles.container}>
+      <Text numberOfLines={1} style={styles.title}>
+        Contacts on Thunder
+      </Text>
+      {loading && <ActivityIndicator size={30} />}
+      <ScrollView style={styles.contactsContainers}>
+        {userList?.length === 0 && <Text>no contacts</Text>}
+        {userList?.length > 0 &&
+          userList?.map((contact, id) => {
+            return (
+              <TouchableOpacity
+                key={id}
+                onPress={() => enterChat(contact.displayName, contact.uid)}>
+                <Contact contact={contact} />
+              </TouchableOpacity>
+            );
+          })}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
-export default ContactScreen;
+export default memo(ContactScreen);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-    justifyContent: 'center',
+    backgroundColor: '#F1F1F1',
+    // paddingTop: 30,
+    // justifyContent: 'center',
     alignItems: 'center',
   },
-  wrapper: {
-    width: '90%',
-    height: '90%',
-    padding: 8,
-    backgroundColor: 'lightgrey',
+  title: {
+    fontSize: 28,
     color: 'black',
+    fontFamily: 'Inter-Light',
+    marginTop: 30,
+  },
+  contactsContainers: {
+    // backgroundColor: 'blue',
+    padding: 10,
+    flex: 1,
+    width: '90%',
+    // alignItems: 'center',
   },
 });

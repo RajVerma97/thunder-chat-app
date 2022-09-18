@@ -8,6 +8,10 @@ buildscript {
         minSdkVersion = 21
         compileSdkVersion = 31
         targetSdkVersion = 31
+        // googlePlayServicesVersion = "16.1.0"
+        // firebaseVersion = "17.3.4"
+         googlePlayServicesVersion = "+" // default: "+"
+        firebaseMessagingVersion = "21.1.0" // default: "21.1.0"
      
 
         if (System.properties['os.arch'] == "aarch64") {

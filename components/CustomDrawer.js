@@ -99,7 +99,11 @@ const CustomDrawer = props => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.drawerItem}
-            onPress={() => navigation.navigate('ContactScreen')}>
+            onPress={() =>
+              navigation.navigate('AppStackScreen', {
+                screen: 'ContactScreen',
+              })
+            }>
             <FeatherIcon style={styles.drawerItem__icon} name="user" />
 
             <Text style={styles.drawerItem__text}>contacts</Text>
@@ -107,7 +111,11 @@ const CustomDrawer = props => {
 
           <TouchableOpacity
             style={styles.drawerItem}
-            onPress={() => navigation.navigate('SettingsScreen')}>
+            onPress={() =>
+              navigation.navigate('AppStackScreen', {
+                screen: 'SettingsScreen',
+              })
+            }>
             <FeatherIcon style={styles.drawerItem__icon} name="settings" />
 
             <Text style={styles.drawerItem__text}>settings</Text>

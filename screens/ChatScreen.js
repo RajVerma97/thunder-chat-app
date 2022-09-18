@@ -24,6 +24,8 @@ import {
 } from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useRoute} from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
+
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
@@ -33,33 +35,50 @@ import ChatMessage from '../components/ChatMessage';
 import Animated from 'react-native-reanimated';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import Entypo from 'react-native-vector-icons/Entypo';
+import FeatherIcon from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+// import SimpleLineIcon from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import CameraRollModal from '../components/CameraRollModal';
+import PushNotification from 'react-native-push-notification';
+import FastImage from 'react-native-fast-image';
 // import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ChatScreen = props => {
   console.log('chat screen rendering');
   const navigation = useNavigation();
   const route = useRoute();
-  const {senderUid, receiverUid, conversationId} = route.params;
-  const [sender, setSender] = useState(null);
-  const [receiver, setReceiver] = useState(null);
-  const [text, setText] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      messageId: '',
-      createdAt: '',
-      image: '',
-      text: '',
-      senderUid: '',
-      reply: '',
-      isLiked: false,
+  const {conversationId, conversation} = route.params;
+  // const conversationId = conversation.conversationId;
+  // console.log(conversation);
+  var receiver;
+  if (auth().currentUser.uid === conversation.participants[0].uid) {
+    receiver = conversation.participants[1];
+  } else {
+    receiver = conversation.participants[0];
+  }
 
-      conversationId: '',
-    },
-  ]);
+  // console.log(receiver);
+  const sender = auth().currentUser;
+
+  // console.log(sender);
+  // console.log('conversation Id of room is ' + conversationId);
+
+  //  {
+  //     messageId: '',
+  //     createdAt: '',
+  //     image: '',
+  //     text: '',
+  //     senderUid: '',
+  //     reply: '',
+  //     isLiked: false,
+
+  //     conversationId: '',
+  //   },
+
+  const [text, setText] = useState('');
+  const [messages, setMessages] = useState([]);
   const inputRef = useRef();
   const scrollViewRef = useRef();
   const [replyMessageBar, setReplyMessageBar] = useState(false);
@@ -67,123 +86,157 @@ const ChatScreen = props => {
   const [clickedImage, setClickedImage] = useState(null);
   const [cameraRollVisibility, setCameraRollVisibility] = useState(false);
   const [visible, setVisible] = useState(false);
-
-
-  
-
+  const isFocused = useIsFocused();
   useEffect(() => {
-    // console.log('get the receiver info in chat screen');
-    let isMounted = true;
-
-    const getReceiver = async () => {
-      try {
-        if (isMounted) {
-          const response = await firestore()
-            .collection('Users')
-            .where('uid', '==', receiverUid)
-            .get();
-          const userDoc = response._docs[0]._data;
-          setReceiver(prevReceiver => userDoc);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    getReceiver();
-    return () => {
-      isMounted = false;
-    };
+    setMessages(prevMessages => conversation.messages);
   }, []);
+
+  // useEffect(() => {
+  //   // console.log('get the receiver info in chat screen');
+  //   let isMounted = true;
+
+  //   const getReceiver = async () => {
+  //     try {
+  //       if (isMounted) {
+  //         const response = await firestore()
+  //           .collection('Users')
+  //           .where('uid', '==', receiverUid)
+  //           .get();
+  //         const userDoc = response._docs[0]._data;
+  //         setReceiver(prevReceiver => userDoc);
+  //       }
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+
+  //   getReceiver();
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, []);
 
   useLayoutEffect(() => {
     // console.log('setting the top layout  in chat screen');
     navigation.setOptions({
-      title: '',
-
+      title: 'yo',
       headerTitleAlign: 'left',
-
-      headerBackTitleVisible: false,
+      headerBackVisible: false,
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <FeatherIcon name="arrow-left" size={30} color="white" />
+        </TouchableOpacity>
+      ),
 
       headerTitle: () => (
-        <View
-          styles={{
-            flexDirection: 'row',
-          }}>
+        <View style={styles.profileContainer}>
           <Image
             resizeMode="contain"
-            style={{width: 40, height: 40, borderRadius: 50}}
+            style={styles.profileImage}
             source={
-              receiver?.photoURL
-                ? {uri: receiver?.photoURL}
-                : {
-                    uri: 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
+              receiver.photoURL
+                ? {
+                    uri: receiver.photoURL,
+                    // cache: FastImage.cacheControl.immutable,
                   }
+                : require('../assets/images/uploadPhoto.png')
             }
           />
-          <Text style={{color: 'black', fontSize: 10, fontWeight: 'bold'}}>
-            {receiver?.displayName}
-          </Text>
+          <View>
+            <Text style={styles.displayName}>{receiver?.displayName}</Text>
+            <Text style={styles.onlineStatus}>active</Text>
+          </View>
         </View>
       ),
 
-      // headerLeft: () => (
-      //   <TouchableOpacity onPress={navigation.goBack}>
-      //     <AntDesign name="arrowleft" size={24} color="black" />
-      //   </TouchableOpacity>
-      // ),
-
       headerRight: () => (
-        <View
-          style={{
-            width: 100,
-
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <TouchableOpacity>
-            <FontAwesome name="phone" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <FontAwesome name="video" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Entypo name="dots-three-vertical" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity>
+          <Entypo name="dots-three-vertical" size={22} color="white" />
+        </TouchableOpacity>
       ),
     });
   }, [navigation, receiver]);
 
-  useLayoutEffect(() => {
-    let isMounted = true;
-    // console.log('get messsage in chat screen ');
-    const getMessages = async () => {
+  useEffect(() => {
+    const updateUnReadMessages = async () => {
       try {
-        if (isMounted) {
-          // console.log(`conversation id: ${conversationId}`);
-          firestore()
-            .collection('Messages')
-            .where('conversationId', '==', conversationId)
-            .orderBy('createdAt', 'asc')
-            .onSnapshot(snapshot => {
-              if (snapshot && snapshot._docs) {
-                setMessages(prevMessages =>
-                  snapshot._docs.map(doc => doc._data),
-                );
-              }
-            });
+        const lastMessage =
+          conversation.messages[conversation.messages.length - 1];
+        // console.log(lastMessage);
+
+        if (auth().currentUser.uid !== lastMessage?.senderUid) {
+          console.log('you are not the sender of msg');
+          const conversationRef = await firestore()
+            .collection('Conversations')
+            .doc(conversationId);
+          const messages = conversation.messages;
+          // console.log(messages);
+          const readMessages = messages.filter(message => {
+            if (!message.isRead) {
+              message.isRead = true;
+            }
+
+            return message;
+          });
+          // console.log(readMessages);
+
+          const result = await conversationRef.update({messages: readMessages});
+
+          //if the sender of the message
         }
       } catch (err) {
         console.log(err);
       }
     };
-
-    getMessages();
-    return () => {
-      isMounted = false;
-    };
+    updateUnReadMessages();
   }, []);
+
+  useEffect(() => {
+    scrollViewRef.current.scrollToEnd({
+      animated: true,
+
+      behavior: 'smooth',
+    });
+  }, []);
+
+  // useEffect(() => {
+  //   let isMounted = true;
+  //   // console.log('get messsages in chat screen ');
+  //   const getMessages = async () => {
+  //     try {
+  //       if (isMounted) {
+  //         // console.log(`conversation id: ${conversationId}`);
+  //         firestore()
+  //           .collection('Messages')
+  //           .where('conversationId', '==', conversationId)
+  //           .orderBy('createdAt', 'asc')
+  //           .onSnapshot(snapshot => {
+  //             if (snapshot && snapshot._docs) {
+  //               // snapshot._docs.map(doc => console.log(doc._data));
+
+  //               setMessages(snapshot._docs.map(doc => doc._data));
+  //             }
+  //           });
+  //       }
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+
+  //   getMessages();
+
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, []);
+
+  const handleNotification = message => {
+    PushNotification.localNotification({
+      channelId: 'test-channel',
+      title: `${receiver.displayName} has sent a msg`,
+      message: message.text,
+    });
+  };
 
   const uploadImage = useCallback(
     async clickedImagePath => {
@@ -271,14 +324,14 @@ const ChatScreen = props => {
     async text => {
       // console.log('sending msg');
       try {
-        console.log('send msg' + text);
+        // console.log('send msg' + text);
         if (text !== '') {
           var message;
           if (reply === '') {
             message = {
               text: text,
               image: '',
-              senderUid: senderUid,
+              senderUid: sender.uid,
 
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
               conversationId: conversationId,
@@ -290,7 +343,7 @@ const ChatScreen = props => {
             message = {
               text: text,
               image: '',
-              senderUid: senderUid,
+              senderUid: sender.uid,
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
               conversationId: conversationId,
               isLiked: false,
@@ -298,6 +351,7 @@ const ChatScreen = props => {
               reply: reply,
             };
           }
+          // console.log(message);
 
           const response = await firestore()
             .collection('Messages')
@@ -317,11 +371,16 @@ const ChatScreen = props => {
             .collection('Conversations')
             .doc(me.conversationId);
 
-          const lastMessage = me.text;
+          // const lastMessage = me;
 
           const result2 = await conversationRef.update({
-            lastMessage: lastMessage,
+            messages: [...messages, me],
+            // lastMessage: me,
           });
+          if (auth().currentUser.uid === receiver.uid) {
+            //receiver
+            handleNotification(message);
+          }
           setReply('');
           setText('');
 
@@ -351,6 +410,21 @@ const ChatScreen = props => {
           .collection('Messages')
           .doc(messageId)
           .delete();
+        const conversationRef = await firestore()
+          .collection('Conversations')
+          .doc(conversationId);
+
+        // const lastMessage = me;
+        const filteredMessages = messages.filter(message => {
+          if (message.messageId !== messageId) {
+            return message;
+          }
+        });
+
+        const result2 = await conversationRef.update({
+          messages: filteredMessages,
+          // lastMessage: messages[messages.length -1 ],
+        });
 
         setMessages(messages =>
           messages.filter(message => {
@@ -371,6 +445,24 @@ const ChatScreen = props => {
         .collection('Messages')
         .doc(messageId);
       const updatedMessage = messageRef.update({isLiked: true});
+
+      const conversationRef = await firestore()
+        .collection('Conversations')
+        .doc(conversationId);
+
+      // const lastMessage = me;
+      const filteredMessages = messages.filter(message => {
+        if (message.messageId == messageId) {
+          message.isLiked = true;
+        }
+        return message;
+      });
+
+      const result2 = await conversationRef.update({
+        messages: filteredMessages,
+        // lastMessage: messages[messages.length -1 ],
+      });
+
       setMessages(messages =>
         messages.filter(message => {
           if (message.messageId == messageId) {
@@ -388,6 +480,17 @@ const ChatScreen = props => {
         const messageRef = await firestore()
           .collection('Messages')
           .doc(messageId);
+        const conversationRef = await firestore()
+          .collection('Conversations')
+          .doc(conversationId);
+
+        // const lastMessage = me;
+        const filteredMessages = messages.filter(message => {
+          if (message.messageId == messageId) {
+            message.reply = 'nope';
+          }
+          return message;
+        });
 
         setReply(message);
         inputRef.current.focus();
@@ -405,6 +508,23 @@ const ChatScreen = props => {
         .collection('Messages')
         .doc(messageId);
       const updatedMessage = messageRef.update({isLiked: false});
+
+      const conversationRef = await firestore()
+        .collection('Conversations')
+        .doc(conversationId);
+
+      // const lastMessage = me;
+      const filteredMessages = messages.filter(message => {
+        if (message.messageId == messageId) {
+          message.isLiked = false;
+        }
+        return message;
+      });
+
+      const result2 = await conversationRef.update({
+        messages: filteredMessages,
+        // lastMessage: messages[messages.length -1 ],
+      });
       setMessages(messages =>
         messages.filter(message => {
           if (message.messageId == messageId) {
@@ -423,20 +543,16 @@ const ChatScreen = props => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <>
             <ScrollView
-              contentContainerStyle={{paddingTop: 15}}
-              ref={scrollViewRef}
-              onContentSizeChange={() =>
-                scrollViewRef.current.scrollToEnd({
-                  animated: true,
-
-                  behavior: 'smooth',
-                })
-              }>
-              {messages.map((message, id) => {
+              contentContainerStyle={{paddingTop: 15, paddingHorizontal: 10}}
+              ref={scrollViewRef}>
+              {messages?.length === 0 && (
+                <Text style={{color: 'black'}}>no messsages</Text>
+              )}
+              {messages?.map((message, id) => {
                 return (
                   <ChatMessage
                     key={id}
-                    receiverUid={receiverUid}
+                    receiverUid={receiver.uid}
                     message={message}
                     likeMessage={likeMessage}
                     unLikeMessage={unLikeMessage}
@@ -455,7 +571,12 @@ const ChatScreen = props => {
 
             <View style={styles.footer}>
               <TouchableOpacity onPress={() => openCamera()}>
-                <FontAwesome name="camera" color="black" size={30} />
+                <FeatherIcon
+                  style={styles.cameraIcon}
+                  name="camera"
+                  color="black"
+                  size={28}
+                />
               </TouchableOpacity>
 
               <TextInput
@@ -467,13 +588,20 @@ const ChatScreen = props => {
                 style={styles.textInput}
                 placeholder="message..."
                 placeholderTextColor="grey"
+                // selectionColor={'lightblue'}
               />
               {text ? (
                 <TouchableOpacity
+                  style={styles.sendBtn}
                   onPress={() => {
                     sendMsg(text);
                   }}>
-                  <Ionicons name="send" color="purple" size={26} />
+                  <FeatherIcon
+                    style={styles.sendBtn__icon}
+                    name="send"
+                    color="black"
+                    size={20}
+                  />
                 </TouchableOpacity>
               ) : (
                 // <Button
@@ -481,11 +609,16 @@ const ChatScreen = props => {
 
                 //   title="send msg"
                 // />
-                <></>
+                <>
+                  <TouchableOpacity onPress={() => openCameraRoll()}>
+                    <AntDesign name="picture" color="black" size={30} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => openCameraRoll()}>
+                    {/* <SimpleLineIcon name="microphone" /> */}
+                    {/* <SimpleLineIcon name="phone" /> */}
+                  </TouchableOpacity>
+                </>
               )}
-              <TouchableOpacity onPress={() => openCameraRoll()}>
-                <AntDesign name="picture" color="black" size={30} />
-              </TouchableOpacity>
             </View>
           </>
         </TouchableWithoutFeedback>
@@ -501,13 +634,23 @@ export default ChatScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#F1F1F1',
   },
+
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-    padding: 15,
+    justifyContent: 'space-around',
+    alignSelf: 'center',
+    width: '90%',
+    // padding: 12,
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+
+    elevation: 5,
+    borderRadius: 100,
+    marginBottom: 20,
+    height: 60,
   },
   // wrapper: {
   //   position: 'absolute',
@@ -521,14 +664,19 @@ const styles = StyleSheet.create({
 
   textInput: {
     bottom: 0,
-    height: 40,
+
     flex: 1,
     marginRight: 15,
-    backgroundColor: '#ECECEC',
-    padding: 10,
+    marginLeft: 15,
+    fontFamily: 'Inter-Semibold',
+    // backgroundColor: '#ECECEC',
+    // padding: 8,
     color: 'grey',
-    borderRadius: 30,
-    fontSize: 16,
+
+    fontSize: 18,
+
+    // borderColor: 'red',
+    // borderWidth: 2,
   },
   inputMsg: {
     width: '50%',
@@ -549,5 +697,42 @@ const styles = StyleSheet.create({
     width: 200,
     height: 50,
     backgroundColor: 'black',
+  },
+  profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // borderWidth: 1,
+    // borderColor: 'red',
+    // padding: 10,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    resizeMode: 'contain',
+    marginRight: 5,
+  },
+  displayName: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+  },
+  onlineStatus: {
+    fontSize: 12,
+    fontFamily: 'Inter-Light',
+  },
+  sendBtn: {
+    borderRadius: 100,
+    backgroundColor: '#3E45DF',
+
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+  },
+  sendBtn__icon: {
+    transform: [{rotate: '45deg'}],
+    color: 'white',
   },
 });

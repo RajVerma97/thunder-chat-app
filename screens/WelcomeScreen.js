@@ -7,6 +7,7 @@ import {
   Button,
   SafeAreaView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import React, {
   useState,
@@ -14,6 +15,7 @@ import React, {
   useLayoutEffect,
   useRef,
   useCallback,
+  useContext,
 } from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useIsFocused} from '@react-navigation/native';
@@ -30,15 +32,20 @@ import auth from '@react-native-firebase/auth';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import Conversation from '../components/Conversation';
+import PushNotification from 'react-native-push-notification';
+import {ConversationsContext} from '../Context/ConversationsContext';
 
 const WelcomeScreen = props => {
   // console.log('welcome screen rendering');
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const route = useRoute();
+  // const {conversations, setConversations} = useContext(ConversationsContext);
+  const [conversations, setConversations] = useState([]);
 
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   //  {
   //     conversationId: '',
   //     participants: [],
@@ -49,7 +56,7 @@ const WelcomeScreen = props => {
   //     unseenNumbers: 0,
   //     wallpaper: '',
   //   },
-  const [conversations, setConversations] = useState([]);
+  // const [conversations, setConversations] = useState([]);
 
   // const [lastMessage, setLastMessage] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -64,10 +71,29 @@ const WelcomeScreen = props => {
   //     videoPlayer.current.presentFullScreenPlayer();
   //   }
   // };
+  useEffect(() => {
+    createChannels();
+  }, []);
+
+  const createChannels = () => {
+    PushNotification.createChannel({
+      channelId: 'test-channel',
+      channelName: 'test channel',
+    });
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
       title: 'Thunder',
+      headerTitle: () => (
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
+            <FeatherIcon name="menu" color="white" size={26} />
+          </TouchableOpacity>
+          <Text>Thunder</Text>
+        </View>
+      ),
+
       headerRight: () => (
         <View
           style={{
@@ -80,7 +106,11 @@ const WelcomeScreen = props => {
             alignItems: 'center',
             padding: 12,
           }}>
-          <TouchableOpacity onPress={() => navigation.navigate('SearchScreen')}>
+          <TouchableOpacity
+            onPress={() =>
+              // console.log(conversations)
+              navigation.navigate('SearchScreen')
+            }>
             <FeatherIcon name="search" color="white" size={26} />
           </TouchableOpacity>
           {/* <TouchableOpacity>
@@ -91,10 +121,9 @@ const WelcomeScreen = props => {
     });
   }, [navigation]);
 
- 
-
   useLayoutEffect(() => {
     console.log('get conversations inside useEffect');
+    setIsLoading(prevIsLoading => true);
     let isCancelled = false;
     const getConversations = async () => {
       try {
@@ -104,22 +133,25 @@ const WelcomeScreen = props => {
             .get();
 
           let temp = [];
-          conversations._docs.filter(async doc => {
+          conversations._docs.filter(doc => {
             try {
               const conversation = doc._data;
+              //  console.log(conversation);
+
               if (
-                conversation.participants.includes(
-                  auth().currentUser.displayName,
-                )
+                conversation.participants[0].uid === auth().currentUser.uid ||
+                conversation.participants[1].uid === auth().currentUser.uid
               ) {
                 temp.push(conversation);
+                // console.log(conversation.participants);
               }
             } catch (err) {
               console.log(err);
             }
           });
-          console.log(temp);
+          // console.log(temp);
           setConversations(prevConversations => temp);
+          setIsLoading(prevIsLoading => false);
         }
       } catch (err) {
         console.log(err);
@@ -134,121 +166,78 @@ const WelcomeScreen = props => {
     };
   }, [isFocused]);
 
-  const enterChat = async (userBDisplayName, userBUid) => {
+  const enterChat = async (conversationId, conversation) => {
+    var myConversation = conversation;
+    console.log('original conversation');
+    console.log(myConversation);
+    // console.log('enter room:' + conversationId);
     try {
-      let conversationId;
-      const conversations = await firestore().collection('Conversations').get();
-      let isUnique = true;
+      // const messages = await firestore().collection('Messages').doc(conversationId);
 
-      var convId;
+      // firestore()
+      //   .collection('Messages')
+      //   .where('conversationId', '==', conversationId)
+      //   .orderBy('createdAt', 'asc')
+      //   .onSnapshot(snapshot => {
+      //     if (snapshot && snapshot._docs) {
+      //       var messages = [];
 
-      conversations._docs.forEach(doc => {
-        let conversation = doc._data;
-        let isDuplicate = false;
+      //       snapshot._docs.map(doc => {
+      //         const message = doc._data;
 
-        let temp = [user.displayName, userBDisplayName];
-        let participants = conversation.participants;
+      //         messages.push(message);
+      //       });
 
-        if (participants.includes(temp[0]) && participants.includes(temp[1])) {
-          isDuplicate = true;
-          convId = conversation.conversationId;
-        }
+      // myConversation.messages = messages;
+      // const conversationRef = firestore()
+      //   .collection('Conversations')
+      //   .doc(conversationId);
 
-        if (isDuplicate) {
-          isUnique = false;
-        }
+      // // const lastMessage = me;
+
+      // const result = conversationRef
+      //   .update({
+      //     messages: messages,
+      //   })
+      //   .then(res => console.log('updated conversation'));
+
+      navigation.navigate('ChatScreen', {
+        conversationId: conversationId,
+        conversation: myConversation,
       });
-
-      if (isUnique) {
-        const conversationsRef = firestore().collection('Conversations');
-
-        const receiver = result2._docs[0]._data;
-        const response = await firestore()
-          .collection('Conversations')
-          .add({
-            participants: [user.displayName, userBDisplayName],
-            lastMessage: '',
-            unSeenNumbers: 0,
-            wallpaper: '',
-          });
-
-        conversationId = response.id;
-
-        const docRef = await firestore()
-          .collection('Conversations')
-          .doc(conversationId);
-        const result = docRef.update({conversationId: conversationId});
-
-        navigation.navigate('ChatScreen', {
-          conversationId: conversationId,
-          senderUid: user.uid,
-          receiverUid: userBUid,
-        });
-      } else {
-        navigation.navigate('ChatScreen', {
-          conversationId: convId,
-          senderUid: user.uid,
-          receiverUid: userBUid,
-        });
-      }
     } catch (err) {
       console.log(err);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.conversationContainer}>
-        {conversations.length > 0 &&
-          conversations.map((conversation, index) => {
-            return (
-              <TouchableOpacity
-                key={index}
-                onPress={() =>
-                  enterChat(
-                    conversation.receiverDisplayName,
-                    conversation.receiverUid,
-                  )
-                }>
-                <Conversation conversation={conversation} />
-              </TouchableOpacity>
-            );
-            return;
-          })}
+    <>
+      <SafeAreaView style={styles.container}>
+        {isLoading && <ActivityIndicator size={30} />}
 
-        {/* {conversations.length > 0 &&
-          conversations.map((conversation, index) => {
-            //  return <Conversation conversation={conversation} key={index} />;
-            <Text style={{color: 'black'}}>hey</Text>;
-          })} */}
-      </ScrollView>
-    </SafeAreaView>
-    // <View style={styles.container}>
-    //   <Text>Logged in as {user?.displayName} </Text>
-    //   <TouchableOpacity
-    //     onPress={() =>
-    //       navigation.navigate('SearchScreen', {
-    //         conversations: conversations,
-    //       })
-    //     }>
-    //     <AntDesign name="search1" color="white" size={30} />
-    //   </TouchableOpacity>
+        <ScrollView style={styles.conversationContainer}>
+          {conversations?.length === 0 && <Text>no conversation</Text>}
+          {conversations?.length > 0 &&
+            conversations?.map((conversation, index) => {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    enterChat(conversation.conversationId, conversation)
+                  }>
+                  <Conversation conversation={conversation} />
+                </TouchableOpacity>
+              );
+              return;
+            })}
+        </ScrollView>
+      </SafeAreaView>
+      <Button
+        title="get contacts"
+        onPress={() => navigation.navigate('ContactScreen')}
+      />
+    </>
 
-    //   <FastImage
-    //     style={{width: 200, height: 200}}
-    //     source={{
-    //       uri: profileImageUrl
-    //         ? profileImageUrl
-    //         : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-    //       cache: FastImage.cacheControl.immutable,
-    //     }}
-    //   />
-
-    //   <Button title="sign out" onPress={() => auth().signOut()}></Button>
-    //   <Button
-    //     title="get contacts"
-    //     onPress={() => navigation.navigate('ContactScreen')}
-    //   />
     //   {/* <Video
     //     ref={videoPlayer}
     //     source={{
@@ -274,46 +263,6 @@ const WelcomeScreen = props => {
     //     onPress={() =>
     //       setIsFullScreen(prevIsFullScreen => !prevIsFullScreen)
     //     }></Button> */}
-    //   {conversations ? (
-    //     <ScrollView>
-    //       {conversations.length > 0 ? (
-    //         <View>
-    //           <Text>we have a conversations list</Text>
-    //           {conversations.map((conversation, id) => {
-    //             return (
-    //               <ScrollView key={id}>
-    //                 <Text>{conversation.receiverDisplayName}</Text>
-    //                 <TouchableOpacity
-    //                   onPress={() =>
-    //                     enterChat(
-    //                       conversation.receiverDisplayName,
-    //                       conversation.receiverUid,
-    //                     )
-    //                   }>
-    //                   <FastImage
-    //                     style={{width: 50, height: 50}}
-    //                     source={{
-    //                       uri: conversation.receiverPhotoUrl
-    //                         ? conversation.receiverPhotoUrl
-    //                         : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-    //                       cache: FastImage.cacheControl.immutable,
-    //                     }}
-    //                   />
-    //                   <Text>last msg--{conversation.lastMessage} </Text>
-    //                   <Text>unseen Messages--{conversation.unSeenNumbers}</Text>
-    //                 </TouchableOpacity>
-    //               </ScrollView>
-    //             );
-    //           })}
-    //         </View>
-    //       ) : (
-    //         <Text>conversation list is empty</Text>
-    //       )}
-    //     </ScrollView>
-    //   ) : (
-    //     <Text>loading conversation list</Text>
-    //   )}
-    // </View>
   );
 };
 
@@ -321,7 +270,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F1F1F1',
-    padding: 10,
+    paddingTop: 30,
+    paddingHorizontal: 25,
+  },
+  conversationContainer: {
+    // backgroundColor: 'blue'
   },
 });
 

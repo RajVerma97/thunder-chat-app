@@ -106,7 +106,7 @@ export default function VerifyOtpScreen(props) {
                 firstBoxRef.current.focus();
               }
             }}
-            onKeyPress={()=>{console.log('hey')}}
+            // onKeyPress={()=>{console.log('hey')}}
             maxLength={1}
             numberOfLines={1}
           />

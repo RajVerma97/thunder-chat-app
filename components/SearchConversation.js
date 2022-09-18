@@ -2,15 +2,16 @@ import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import React from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
+import DoubleCheck from '../components/DoubleCheck';
 
 import moment from 'moment';
 import auth from '@react-native-firebase/auth';
-import DoubleCheck from './DoubleCheck';
 
-const Conversation = props => {
+const SearchConversation = props => {
   const conversation = props.conversation;
-  // const foundMessage = props.foundMessage;
-  // const query = props.query;
+
+  const foundMessage = props.foundMessage;
+  const query = props.query;
 
   const lastMessage = conversation.messages[conversation.messages.length - 1];
   var receiver;
@@ -59,30 +60,40 @@ const Conversation = props => {
           {receiver.displayName}
         </Text>
         <View style={styles.conversation__middleBottom}>
-          {lastMessage &&
-            (lastMessage.isRead ? (
-              <DoubleCheck />
-            ) : (
-              <TouchableOpacity>
-                <FeatherIcon
-                  style={styles.conversation__readStatusIcon}
-                  name="check"
-                />
-              </TouchableOpacity>
-            ))}
-
-          <Text numberOfLines={1} style={styles.conversation__lastMessage}>
-            {lastMessage?.text}
-          </Text>
+          {foundMessage?.isRead ? (
+            <DoubleChechk />
+          ) : (
+            <TouchableOpacity>
+              <FeatherIcon
+                style={styles.conversation__readStatusIcon}
+                name="check"
+              />
+            </TouchableOpacity>
+          )}
+          {query.length === 0 ? (
+            <Text numberOfLines={1} style={styles.conversation__lastMessage}>
+              {lastMessage?.text}
+            </Text>
+          ) : (
+            <Text numberOfLines={1} style={styles.conversation__lastMessage}>
+              {foundMessage?.text}
+            </Text>
+          )}
         </View>
       </View>
       <View style={styles.conversation__right}>
-        {lastMessage?.createdAt && (
+        {query.length === 0 && lastMessage?.createdAt && (
           <Text style={styles.conversation__time}>
             {moment(lastMessage?.createdAt?.seconds * 1000).format('HH:mm')}
           </Text>
         )}
-        {lastMessage?.senderUid && (
+        {query.length !== 0 && foundMessage?.createdAt && (
+          <Text style={styles.conversation__time}>
+            {moment(foundMessage?.createdAt?.seconds * 1000).format('HH:mm')}
+          </Text>
+        )}
+
+        {/* {lastMessage?.senderUid && (
           <View style={styles.rightBottom}>
             {!(auth().currentUser.uid === lastMessage?.senderUid) &&
               getUnReadMessageCount() > 0 && (
@@ -93,13 +104,13 @@ const Conversation = props => {
                 </View>
               )}
           </View>
-        )}
+        )} */}
       </View>
     </View>
   );
 };
 
-export default Conversation;
+export default SearchConversation;
 
 const styles = StyleSheet.create({
   conversation: {

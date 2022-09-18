@@ -19,6 +19,11 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+const AuthStack = createNativeStackNavigator();
+const AppStack = createNativeStackNavigator();
+const ChatStack = createNativeStackNavigator();
+// import PushController from './components/PushController';
+import {ConversationsContext} from './Context/ConversationsContext';
 
 const Root = () => {
   <Stack.Navigator>
@@ -34,12 +39,44 @@ const Root = () => {
         headerTintColor: 'white',
       }}
     />
+  </Stack.Navigator>;
+};
 
-    <Stack.Screen
-      name="ChatScreen"
-      component={ChatScreen}
+const AuthStackScreen = () => (
+  <AuthStack.Navigator initialRouteName="SplashScreen">
+    <AuthStack.Screen
+      name="SplashScreen"
+      component={SplashScreen}
       options={{
-        title: 'Chat Screen',
+        title: '',
+        headerShown: false,
+      }}
+    />
+    <AuthStack.Screen
+      name="PhoneNumberScreen"
+      component={PhoneNumberScreen}
+      options={{
+        title: '',
+        headerShown: false,
+      }}
+    />
+    <AuthStack.Screen
+      name="VerifyOtpScreen"
+      component={VerifyOtpScreen}
+      options={{
+        title: '',
+        headerShown: false,
+      }}
+    />
+  </AuthStack.Navigator>
+);
+const AppStackScreen = () => (
+  <AppStack.Navigator>
+    <AppStack.Screen
+      name="WelcomeScreen"
+      component={WelcomeScreen}
+      options={{
+        title: 'welcome screen',
         headerShown: true,
         headerStyle: {
           backgroundColor: '#222831',
@@ -50,8 +87,69 @@ const Root = () => {
         },
       }}
     />
-  </Stack.Navigator>;
-};
+    <AppStack.Screen
+      name="ContactScreen"
+      component={ContactScreen}
+      options={{
+        title: 'Contact Screen',
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#222831',
+        },
+        headerTintColor: 'white',
+        headerTintStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+    <AppStack.Screen
+      name="SettingsScreen"
+      component={SettingsScreen}
+      options={{
+        title: 'Settings Screen',
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#222831',
+        },
+        headerTintColor: 'white',
+        headerTintStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+    <AppStack.Screen
+      name="ChatScreen"
+      component={ChatScreen}
+      options={{
+        title: 'Chat Screen',
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#222831',
+        },
+
+        headerTintColor: 'white',
+        headerTintStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+    <AppStack.Screen
+      name="SearchScreen"
+      component={SearchScreen}
+      options={{
+        title: 'Search Screen',
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#222831',
+        },
+        headerTintColor: 'white',
+        headerTintStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+  </AppStack.Navigator>
+);
 
 const AuthNavigation = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -74,32 +172,7 @@ const AuthNavigation = () => {
   return (
     <NavigationContainer>
       {!currentUser ? (
-        <Stack.Navigator initialRouteName="SplashScreen">
-          <Stack.Screen
-            name="SplashScreen"
-            component={SplashScreen}
-            options={{
-              title: '',
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="PhoneNumberScreen"
-            component={PhoneNumberScreen}
-            options={{
-              title: '',
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="VerifyOtpScreen"
-            component={VerifyOtpScreen}
-            options={{
-              title: '',
-              headerShown: false,
-            }}
-          />
-        </Stack.Navigator>
+        <AuthStackScreen />
       ) : (
         <Drawer.Navigator
           initialRouteName="WelcomeScreen"
@@ -114,31 +187,17 @@ const AuthNavigation = () => {
               }}
             />
           )}
+
           <Drawer.Screen
-            name="WelcomeScreen"
-            component={WelcomeScreen}
+            name="AppStackScreen"
+            component={AppStackScreen}
             options={{
               title: 'Home Screen',
-              headerShown: true,
+              headerShown: false,
               headerStyle: {
                 backgroundColor: '#222831',
               },
               headerTintColor: 'white',
-            }}
-          />
-          <Drawer.Screen
-            name="SettingsScreen"
-            component={SettingsScreen}
-            options={{
-              title: 'settings',
-              headerShown: true,
-              headerStyle: {
-                backgroundColor: '#222831',
-              },
-              headerTintColor: 'white',
-              headerTintStyle: {
-                fontWeight: 'bold',
-              },
             }}
           />
         </Drawer.Navigator>
