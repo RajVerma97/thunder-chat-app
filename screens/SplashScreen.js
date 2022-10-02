@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  Button,
   Image,
   SafeAreaView,
   StyleSheet,
@@ -10,8 +9,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import React, {useEffect} from 'react';
-import {useState, useRef} from 'react';
+import React from 'react';
+import {useEffect,useState, useRef} from 'react';
 import {LoginContext} from '../Context/LoginContext';
 import {Dimensions} from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
@@ -126,8 +125,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.darkBlue,
-    // paddingHorizontal: 20,
-    // paddingTop: 40,
+ 
     padding: 10,
 
     justifyContent: 'center',
@@ -137,8 +135,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '85%',
     backgroundColor: colors.white,
-    // borderWidth: 5,
-    // borderColor: 'red',
+   
     borderTopRightRadius: 16,
     borderTopLeftRadius: 16,
 

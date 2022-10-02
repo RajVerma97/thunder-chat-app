@@ -80,20 +80,24 @@ const ProfileScreen = props => {
       user.photoURL = loggedInUser.photoURL;
       user.phoneNumber = loggedInUser.phoneNumber;
       user.lastSignInTime = loggedInUser.metadata.lastSignInTime;
+      user.status = 'online';
 
       uploadImage();
 
       const firestore = firebase.firestore();
 
-      const userCollection = fireStore().collection('Users');
+      // const userCollection = fireStore().collection('Users');
 
-      userCollection
-        .add(user)
+      const response = await fireStore()
+        .collection('Users')
+        .doc(user.uid)
+        .set(user)
         .then(() => {})
         .catch(err => console.log(err));
+
       setLoading(prevLoading => false);
 
-      navigation.navigate('WelcomeScreen');
+      navigation.navigate('AppStackScreen', {screen: 'WelcomeScreen'});
     } else {
       setLoading(prevLoading => false);
       if (!firstName) {
@@ -126,12 +130,16 @@ const ProfileScreen = props => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.wrapper}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        {/* <TouchableOpacity
+          // onPress={() =>
+          //   // navigation.navigate('AuthStack', {screen: 'SplashScreen'})
+          // }
+        >
           <FeatherIcon
             style={styles.wrapper__backArrowIcon}
             name="chevron-left"
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Text style={styles.wrapper__title}> create profile</Text>
         <TouchableOpacity
@@ -156,14 +164,14 @@ const ProfileScreen = props => {
           value={firstName}
           onChangeText={text => setFirstName(text)}
           style={styles.input}
-          placeholder="First Name"
+          placeholder="first name"
           placeholderTextColor={'#1E1E1E'}
         />
         <TextInput
           value={lastName}
           onChangeText={text => setLastName(text)}
           style={styles.input}
-          placeholder="Last Name"
+          placeholder="last name"
           placeholderTextColor={'#1E1E1E'}
         />
 
@@ -196,7 +204,7 @@ const styles = StyleSheet.create({
 
   wrapper: {
     width: '100%',
-    height: 650,
+    // height: 600,
     backgroundColor: colors.white,
     borderTopRightRadius: 16,
     borderTopLeftRadius: 16,
@@ -210,15 +218,18 @@ const styles = StyleSheet.create({
     fontSize: 40,
     marginBottom: 30,
     color: '#000000',
+    opacity: 0,
   },
 
   wrapper__title: {
     fontSize: 40,
-    fontWeight: '900',
+
     fontFamily: 'Inter-Bold',
     textTransform: 'capitalize',
     color: '#000000',
     marginBottom: 12,
+    alignSelf: 'center',
+    marginTop: 10,
   },
 
   profileImageContainer: {
@@ -250,17 +261,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 50,
     marginBottom: 20,
-    fontSize: 18,
-    fontFamily: 'Inter-Regular',
-    fontWeight: '500',
+    fontSize: 20,
+    fontFamily: 'Inter-Semibold',
     paddingHorizontal: 25,
     paddingVertical: 12,
     color: '#1E1E1E',
   },
   errorText: {
-    fontWeight: '500',
+    // fontWeight: '100',
     fontFamily: 'Inter-Medium',
-    fontSize: 20,
+    fontSize: 22,
     color: '#E30928',
     marginBottom: 30,
   },
@@ -275,6 +285,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 50,
     alignSelf: 'center',
+    marginBottom: 20,
   },
   createProfileBtn__text: {
     fontWeight: '700',

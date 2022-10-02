@@ -12,6 +12,10 @@ import {
   ScrollView,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  ActivityIndicator,
+  Modal,
+  useWindowDimensions,
+  ImageBackground,
 } from 'react-native';
 import React from 'react';
 import {
@@ -32,7 +36,7 @@ import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
 import moment from 'moment';
 import ChatMessage from '../components/ChatMessage';
-import Animated from 'react-native-reanimated';
+// import Animated from 'react-native-reanimated';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import Entypo from 'react-native-vector-icons/Entypo';
 import FeatherIcon from 'react-native-vector-icons/Feather';
@@ -40,42 +44,44 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 // import SimpleLineIcon from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
-import CameraRollModal from '../components/CameraRollModal';
 import PushNotification from 'react-native-push-notification';
 import FastImage from 'react-native-fast-image';
-// import { SafeAreaView } from 'react-native-safe-area-context';
+import MediaBottomSheet from '../components/MediaBottomSheet';
+import TopMenuModal from '../components/TopMenuModal';
+import Animated, {
+  useAnimatedGestureHandler,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
+import {
+  FlatList,
+  GestureHandlerRootView,
+  PanGestureHandler,
+} from 'react-native-gesture-handler';
+import WallpaperBottomSheet from '../components/WallpaperBottomSheet';
+
 
 const ChatScreen = props => {
   console.log('chat screen rendering');
   const navigation = useNavigation();
   const route = useRoute();
   const {conversationId, conversation} = route.params;
+  const conversationWallpaper = conversation.wallpaper;
+  const wallpaperBottomSheetRef = useRef();
+  const mediaBottomSheetRef = useRef();
+
   // const conversationId = conversation.conversationId;
-  // console.log(conversation);
+ 
   var receiver;
   if (auth().currentUser.uid === conversation.participants[0].uid) {
     receiver = conversation.participants[1];
   } else {
     receiver = conversation.participants[0];
   }
+ 
 
-  // console.log(receiver);
   const sender = auth().currentUser;
-
-  // console.log(sender);
-  // console.log('conversation Id of room is ' + conversationId);
-
-  //  {
-  //     messageId: '',
-  //     createdAt: '',
-  //     image: '',
-  //     text: '',
-  //     senderUid: '',
-  //     reply: '',
-  //     isLiked: false,
-
-  //     conversationId: '',
-  //   },
 
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
@@ -84,40 +90,117 @@ const ChatScreen = props => {
   const [replyMessageBar, setReplyMessageBar] = useState(false);
   const [reply, setReply] = useState('');
   const [clickedImage, setClickedImage] = useState(null);
-  const [cameraRollVisibility, setCameraRollVisibility] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [backgroundWallpaper, setBackgroundWallpaper] = useState(null);
+  const [topMenuToggle, setTopMenuToggle] = useState(false);
   const isFocused = useIsFocused();
+  const dimensions = useWindowDimensions();
+  const top = useSharedValue(dimensions.height);
+  const closeTopMenu = () => {
+    setTopMenuToggle(false);
+  };
+  const openTopMenu = () => {
+   
+    setTopMenuToggle(true);
+  };
+  const changeBackgroundWallpaper = async item => {
+  
+    await firestore()
+      .collection('Conversations')
+      .doc(conversationId)
+      .update({wallpaper: item});
+    setBackgroundWallpaper(item);
+  };
+
+  const showMediaBottomSheet = () => {
+    
+    Keyboard.dismiss();
+    const isActive = mediaBottomSheetRef?.current?.isActive();
+    if (isActive) {
+      mediaBottomSheetRef?.current?.scrollTo(0);
+    } else {
+      mediaBottomSheetRef?.current?.scrollTo(-300);
+    }
+  };
+  const changeTheme = useCallback(() => {
+    Keyboard.dismiss();
+  
+    const isActive = wallpaperBottomSheetRef?.current?.isActive();
+   
+    
+    wallpaperBottomSheetRef?.current?.scrollTo(0);
+    if (isActive) {
+      wallpaperBottomSheetRef?.current?.scrollTo(0);
+    } else {
+      wallpaperBottomSheetRef?.current?.scrollTo(-650);
+    }
+
+    // top.value = withSpring(dimensions.height / 2, {
+    //   damping: 80,
+    //   overshootClamping: true,
+    //   restDisplacementThreshold: 0.1,
+    //   restSpeedThreshold: 0.1,
+    //   stiffness: 500,
+    // });
+  }, [wallpaperBottomSheetRef]);
+
+    const handleNotification = (message) => {
+    let myMsg = '';
+    if (message.text !== '') {
+      myMsg = message.text;
+    } else if (message.image !== '') {
+      myMsg = 'sent an image';
+    } else if (message.video !== '') {
+      myMsg = 'sent a video';
+    }
+    PushNotification.localNotification({
+      channelId: 'test-channel',
+      title: `${receiver.displayName} has sent a msg`,
+      message: myMsg,
+    });
+  };
+
+  const deleteAllMessages = async () => {
+    // const result = await firestore().collection('Messsages').where('conversation');
+    // setMessages(prevMessages=>prevMessages.forEach())
+  
+
+    firestore()
+      .collection('Messages')
+      .where('conversationId', '==', conversationId)
+      .orderBy('createdAt', 'asc')
+      .onSnapshot(async snapshot => {
+        if (snapshot && snapshot._docs) {
+          var msgs = [];
+
+         
+          snapshot._docs.map(doc => msgs.push(doc._data));
+         
+          for (msg of msgs) {
+           
+
+            let messageId = msg.messageId;
+          
+            await firestore().collection('Messages').doc(messageId).delete();
+           
+          }
+          setMessages(prevMessages => []);
+
+          //  setLoading(prevLoading => false);
+        }
+      });
+  };
   useEffect(() => {
-    setMessages(prevMessages => conversation.messages);
+    if (conversationWallpaper) {
+      setBackgroundWallpaper(conversationWallpaper);
+    } else {
+      setBackgroundWallpaper(null);
+    }
   }, []);
 
-  // useEffect(() => {
-  //   // console.log('get the receiver info in chat screen');
-  //   let isMounted = true;
-
-  //   const getReceiver = async () => {
-  //     try {
-  //       if (isMounted) {
-  //         const response = await firestore()
-  //           .collection('Users')
-  //           .where('uid', '==', receiverUid)
-  //           .get();
-  //         const userDoc = response._docs[0]._data;
-  //         setReceiver(prevReceiver => userDoc);
-  //       }
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   };
-
-  //   getReceiver();
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
-
   useLayoutEffect(() => {
-    // console.log('setting the top layout  in chat screen');
+
     navigation.setOptions({
       title: 'yo',
       headerTitleAlign: 'left',
@@ -144,15 +227,23 @@ const ChatScreen = props => {
           />
           <View>
             <Text style={styles.displayName}>{receiver?.displayName}</Text>
-            <Text style={styles.onlineStatus}>active</Text>
+            {receiver?.status === 'online' ? (
+              <Text style={styles.onlineStatus}>online</Text>
+            ) : (
+              <Text style={styles.onlineStatus}>
+                last seen {moment(receiver.status).fromNow()}
+              </Text>
+            )}
           </View>
         </View>
       ),
 
       headerRight: () => (
-        <TouchableOpacity>
-          <Entypo name="dots-three-vertical" size={22} color="white" />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity onPress={() => openTopMenu()}>
+            <Entypo name="dots-three-vertical" size={22} color="white" />
+          </TouchableOpacity>
+        </>
       ),
     });
   }, [navigation, receiver]);
@@ -160,29 +251,24 @@ const ChatScreen = props => {
   useEffect(() => {
     const updateUnReadMessages = async () => {
       try {
-        const lastMessage =
-          conversation.messages[conversation.messages.length - 1];
-        // console.log(lastMessage);
+        const lastMessage = messages[messages?.length - 1];
+      
 
         if (auth().currentUser.uid !== lastMessage?.senderUid) {
-          console.log('you are not the sender of msg');
-          const conversationRef = await firestore()
-            .collection('Conversations')
-            .doc(conversationId);
+        
           const messages = conversation.messages;
-          // console.log(messages);
-          const readMessages = messages.filter(message => {
+         
+          messages?.map(async message => {
             if (!message.isRead) {
-              message.isRead = true;
+              // message.isRead = true;
+              await firestore()
+                .collection('Messages')
+                .doc(message.messageId)
+                .update({
+                  isRead: true,
+                });
             }
-
-            return message;
           });
-          // console.log(readMessages);
-
-          const result = await conversationRef.update({messages: readMessages});
-
-          //if the sender of the message
         }
       } catch (err) {
         console.log(err);
@@ -191,52 +277,44 @@ const ChatScreen = props => {
     updateUnReadMessages();
   }, []);
 
+ 
+
   useEffect(() => {
-    scrollViewRef.current.scrollToEnd({
-      animated: true,
+    let isMounted = true;
 
-      behavior: 'smooth',
-    });
+  
+    const getMessages = async () => {
+      try {
+        if (isMounted) {
+          setLoading(prevLoading => true);
+
+         
+          firestore()
+            .collection('Messages')
+            .where('conversationId', '==', conversationId)
+            .orderBy('createdAt', 'asc')
+            .onSnapshot(snapshot => {
+              if (snapshot && snapshot._docs) {
+                if (snapshot._docs.length === 0) {
+                  setLoading(prevLoading => false);
+                }
+                setMessages(snapshot._docs.map(doc => doc._data));
+
+                setLoading(prevLoading => false);
+              }
+            });
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getMessages();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
-  // useEffect(() => {
-  //   let isMounted = true;
-  //   // console.log('get messsages in chat screen ');
-  //   const getMessages = async () => {
-  //     try {
-  //       if (isMounted) {
-  //         // console.log(`conversation id: ${conversationId}`);
-  //         firestore()
-  //           .collection('Messages')
-  //           .where('conversationId', '==', conversationId)
-  //           .orderBy('createdAt', 'asc')
-  //           .onSnapshot(snapshot => {
-  //             if (snapshot && snapshot._docs) {
-  //               // snapshot._docs.map(doc => console.log(doc._data));
-
-  //               setMessages(snapshot._docs.map(doc => doc._data));
-  //             }
-  //           });
-  //       }
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   };
-
-  //   getMessages();
-
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
-
-  const handleNotification = message => {
-    PushNotification.localNotification({
-      channelId: 'test-channel',
-      title: `${receiver.displayName} has sent a msg`,
-      message: message.text,
-    });
-  };
 
   const uploadImage = useCallback(
     async clickedImagePath => {
@@ -265,11 +343,9 @@ const ChatScreen = props => {
     },
     [clickedImage],
   );
-  const openCameraRoll = () => {
-    setVisible(true);
-  };
 
   const openCamera = useCallback(async () => {
+    Keyboard.dismiss();
     ImagePicker.openCamera({
       width: 300,
       height: 400,
@@ -279,6 +355,7 @@ const ChatScreen = props => {
         const clickedImagePath = response.path;
 
         setClickedImage(prevClickedImage => clickedImagePath);
+        // uploadImage(clickedImagePath);
 
         sendImage(clickedImagePath);
       })
@@ -293,7 +370,7 @@ const ChatScreen = props => {
         const message = {
           text: '',
           image: clickedImagePath,
-          senderUid: senderUid,
+          senderUid: sender.uid,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           conversationId: conversationId,
           isLiked: false,
@@ -305,15 +382,16 @@ const ChatScreen = props => {
         let messageId = response.id;
         const docRef = await firestore().collection('Messages').doc(messageId);
         const result = await docRef.update({messageId: messageId});
-        const updatedMessage = await firestore()
-          .collection('Messages')
-          .doc(messageId)
-          .get();
-        const me = updatedMessage._data;
+        const myDoc = await docRef.get();
+        const updatedMsg = myDoc._data;
 
-        setMessages([...messages, me]);
+         if (auth().currentUser.uid !== sender.uid) {
+            handleNotification(updatedMsg);
+          }
 
-        setClickedImage(prevClickedImage => null);
+        setMessages(prevMessages => [...prevMessages, updatedMsg]);
+
+        // setClickedImage(prevClickedImage => null);
       }
     } catch (err) {
       console.log(err);
@@ -322,17 +400,16 @@ const ChatScreen = props => {
 
   const sendMsg = useCallback(
     async text => {
-      // console.log('sending msg');
+     
       try {
-        // console.log('send msg' + text);
+     
         if (text !== '') {
           var message;
           if (reply === '') {
             message = {
               text: text,
-              image: '',
-              senderUid: sender.uid,
 
+              senderUid: sender.uid,
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
               conversationId: conversationId,
               isLiked: false,
@@ -342,7 +419,7 @@ const ChatScreen = props => {
           } else {
             message = {
               text: text,
-              image: '',
+
               senderUid: sender.uid,
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
               conversationId: conversationId,
@@ -351,7 +428,7 @@ const ChatScreen = props => {
               reply: reply,
             };
           }
-          // console.log(message);
+      
 
           const response = await firestore()
             .collection('Messages')
@@ -361,73 +438,48 @@ const ChatScreen = props => {
             .collection('Messages')
             .doc(messageId);
           const result = await docRef.update({messageId: messageId});
-          const res = await firestore()
-            .collection('Messages')
-            .doc(messageId)
-            .get();
-          const me = res._data;
+          const myDoc = await docRef.get();
+          const updatedMsg = myDoc._data;
 
-          const conversationRef = await firestore()
-            .collection('Conversations')
-            .doc(me.conversationId);
-
-          // const lastMessage = me;
-
-          const result2 = await conversationRef.update({
-            messages: [...messages, me],
-            // lastMessage: me,
-          });
-          if (auth().currentUser.uid === receiver.uid) {
-            //receiver
-            handleNotification(message);
+          if (auth().currentUser.uid !== sender.uid) {
+            handleNotification(updatedMsg);
           }
+
+
+          setMessages(prevMessages => [...prevMessages, updatedMsg]);
+
+
           setReply('');
           setText('');
 
-          setMessages([...messages, me]);
+         
           setReplyMessageBar(false);
         }
       } catch (err) {
         console.log(err);
       }
+    
 
       Keyboard.dismiss();
 
-      //create a msg collection
+      
     },
     [text],
   );
-  // console.log(text);
-
-  // const forwardMessage = () => {
-  //   console.log('forward message');
-  // };
+  
 
   const deleteMessage = useCallback(
     async messageId => {
       try {
+        console.log('delete' + messageId);
+
         const result = await firestore()
           .collection('Messages')
           .doc(messageId)
           .delete();
-        const conversationRef = await firestore()
-          .collection('Conversations')
-          .doc(conversationId);
-
-        // const lastMessage = me;
-        const filteredMessages = messages.filter(message => {
-          if (message.messageId !== messageId) {
-            return message;
-          }
-        });
-
-        const result2 = await conversationRef.update({
-          messages: filteredMessages,
-          // lastMessage: messages[messages.length -1 ],
-        });
 
         setMessages(messages =>
-          messages.filter(message => {
+          messages?.filter(message => {
             if (message.messageId !== messageId) {
               return message;
             }
@@ -446,25 +498,8 @@ const ChatScreen = props => {
         .doc(messageId);
       const updatedMessage = messageRef.update({isLiked: true});
 
-      const conversationRef = await firestore()
-        .collection('Conversations')
-        .doc(conversationId);
-
-      // const lastMessage = me;
-      const filteredMessages = messages.filter(message => {
-        if (message.messageId == messageId) {
-          message.isLiked = true;
-        }
-        return message;
-      });
-
-      const result2 = await conversationRef.update({
-        messages: filteredMessages,
-        // lastMessage: messages[messages.length -1 ],
-      });
-
       setMessages(messages =>
-        messages.filter(message => {
+        messages?.filter(message => {
           if (message.messageId == messageId) {
             message.isLiked = true;
           }
@@ -475,24 +510,17 @@ const ChatScreen = props => {
     [messages],
   );
   const replyMessage = useCallback(
-    async (messageId, message) => {
+    async (messageId, repliedContent) => {
       try {
-        const messageRef = await firestore()
+        await firestore()
           .collection('Messages')
-          .doc(messageId);
-        const conversationRef = await firestore()
-          .collection('Conversations')
-          .doc(conversationId);
+          .doc(messageId)
+          .update({reply: reply});
+       
 
-        // const lastMessage = me;
-        const filteredMessages = messages.filter(message => {
-          if (message.messageId == messageId) {
-            message.reply = 'nope';
-          }
-          return message;
-        });
+        setReply(repliedContent);
 
-        setReply(message);
+      
         inputRef.current.focus();
         setReplyMessageBar(true);
       } catch (err) {
@@ -509,24 +537,8 @@ const ChatScreen = props => {
         .doc(messageId);
       const updatedMessage = messageRef.update({isLiked: false});
 
-      const conversationRef = await firestore()
-        .collection('Conversations')
-        .doc(conversationId);
-
-      // const lastMessage = me;
-      const filteredMessages = messages.filter(message => {
-        if (message.messageId == messageId) {
-          message.isLiked = false;
-        }
-        return message;
-      });
-
-      const result2 = await conversationRef.update({
-        messages: filteredMessages,
-        // lastMessage: messages[messages.length -1 ],
-      });
       setMessages(messages =>
-        messages.filter(message => {
+        messages?.filter(message => {
           if (message.messageId == messageId) {
             message.isLiked = false;
           }
@@ -538,94 +550,152 @@ const ChatScreen = props => {
   );
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <View style={styles.container}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <>
-            <ScrollView
-              contentContainerStyle={{paddingTop: 15, paddingHorizontal: 10}}
-              ref={scrollViewRef}>
-              {messages?.length === 0 && (
-                <Text style={{color: 'black'}}>no messsages</Text>
-              )}
-              {messages?.map((message, id) => {
-                return (
-                  <ChatMessage
-                    key={id}
-                    receiverUid={receiver.uid}
-                    message={message}
-                    likeMessage={likeMessage}
-                    unLikeMessage={unLikeMessage}
-                    deleteMessage={deleteMessage}
-                    replyMessage={replyMessage}
+    <GestureHandlerRootView style={{flex: 1}}>
+      <SafeAreaView style={{flex: 1}}>
+        <WallpaperBottomSheet
+          ref={wallpaperBottomSheetRef}
+          backgroundWallpaper={backgroundWallpaper}
+          setBackgroundWallpaper={setBackgroundWallpaper}
+          changeBackgroundWallpaper={changeBackgroundWallpaper}
+        />
+        <MediaBottomSheet
+          ref={mediaBottomSheetRef}
+          sender={sender}
+          conversationId={conversationId}
+          messages={messages}
+          setMessages={setMessages}
+        />
+
+        <View style={styles.container}>
+          <TopMenuModal
+            topMenuToggle={topMenuToggle}
+            closeTopMenu={closeTopMenu}
+            deleteAllMessages={deleteAllMessages}
+            changeTheme={changeTheme}
+          />
+
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <>
+              <ImageBackground style={{flex: 1}} source={backgroundWallpaper}>
+                <ScrollView
+                  contentContainerStyle={{
+                    paddingTop: 15,
+                    paddingHorizontal: 10,
+                  }}
+                  ref={scrollViewRef}
+                  onContentSizeChange={() =>
+                    scrollViewRef.current.scrollToEnd({
+                      animated: false,
+                    })
+                  }>
+                  {messages?.map((message, id) => {
+                    return (
+                      <ChatMessage
+                        key={id}
+                        receiverUid={receiver.uid}
+                        message={message}
+                        likeMessage={likeMessage}
+                        unLikeMessage={unLikeMessage}
+                        deleteMessage={deleteMessage}
+                        replyMessage={replyMessage}
+                        receiver={receiver}
+                      />
+                    );
+                  })}
+                </ScrollView>
+                {replyMessageBar && (
+                  <View style={styles.replyMessageBar}>
+                    <View style={styles.replyMessageBar__left}>
+                      <TouchableOpacity style={styles.replyBtn}>
+                        <Entypo style={styles.replyBtn__icon} name="reply" />
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.replyMessageBar__right}>
+                      <Text style={styles.senderOfMsgText}>Rajneesh Verma</Text>
+                      <Text
+                        style={styles.originalMessageText}
+                        numberOfLines={1}>
+                        {reply}
+                      </Text>
+                      {/* {reply.text !== '' ? (
+                        <Text style={styles.repliedText}>this is me</Text>
+                      ) : null}
+
+                      {reply.image !== '' ? (
+                        <Image
+                          style={styles.repliedImage}
+                          source={{uri: reply.image}}
+                        />
+                      ) : null} */}
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => setReplyMessageBar(false)}
+                      style={styles.closeReplyBarBtn}>
+                      <AntDesign
+                        style={styles.closeReplyBarBtn__icon}
+                        name="closecircleo"
+                      />
+                    </TouchableOpacity>
+                    {/* <Text style={{color: 'blue'}}>reply to {reply}</Text> */}
+                  </View>
+                )}
+
+                <View style={styles.footer}>
+                  <TouchableOpacity onPress={() => openCamera()}>
+                    <FeatherIcon
+                      style={styles.cameraIcon}
+                      name="camera"
+                      color="black"
+                      size={28}
+                    />
+                  </TouchableOpacity>
+
+                  <TextInput
+                    autoFocus={true}
+                    ref={inputRef}
+                    value={text}
+                    onChangeText={t => setText(t)}
+                    onSubmitEditing={() => sendMsg(text)}
+                    style={styles.textInput}
+                    placeholder="message..."
+                    placeholderTextColor="grey"
+                    // selectionColor={'lightblue'}
                   />
-                );
-              })}
-              {replyMessageBar && (
-                <View style={styles.replyMessageBar}>
-                  <Text>reply to {reply}</Text>
+                  {text ? (
+                    <TouchableOpacity
+                      style={styles.sendBtn}
+                      onPress={() => {
+                        sendMsg(text);
+                      }}>
+                      <FeatherIcon
+                        style={styles.sendBtn__icon}
+                        name="send"
+                        color="black"
+                        size={20}
+                      />
+                    </TouchableOpacity>
+                  ) : (
+                    // <Button
+                    //   style={styles.sendMsgBtn}
+
+                    //   title="send msg"
+                    // />
+                    <>
+                      <TouchableOpacity onPress={() => showMediaBottomSheet()}>
+                        <AntDesign name="picture" color="black" size={30} />
+                      </TouchableOpacity>
+                    </>
+                  )}
                 </View>
-              )}
-              <CameraRollModal visible={visible} setVisible={setVisible} />
-            </ScrollView>
+              </ImageBackground>
+            </>
+          </TouchableWithoutFeedback>
+        </View>
 
-            <View style={styles.footer}>
-              <TouchableOpacity onPress={() => openCamera()}>
-                <FeatherIcon
-                  style={styles.cameraIcon}
-                  name="camera"
-                  color="black"
-                  size={28}
-                />
-              </TouchableOpacity>
-
-              <TextInput
-                autoFocus={true}
-                ref={inputRef}
-                value={text}
-                onChangeText={t => setText(t)}
-                onSubmitEditing={() => sendMsg(text)}
-                style={styles.textInput}
-                placeholder="message..."
-                placeholderTextColor="grey"
-                // selectionColor={'lightblue'}
-              />
-              {text ? (
-                <TouchableOpacity
-                  style={styles.sendBtn}
-                  onPress={() => {
-                    sendMsg(text);
-                  }}>
-                  <FeatherIcon
-                    style={styles.sendBtn__icon}
-                    name="send"
-                    color="black"
-                    size={20}
-                  />
-                </TouchableOpacity>
-              ) : (
-                // <Button
-                //   style={styles.sendMsgBtn}
-
-                //   title="send msg"
-                // />
-                <>
-                  <TouchableOpacity onPress={() => openCameraRoll()}>
-                    <AntDesign name="picture" color="black" size={30} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => openCameraRoll()}>
-                    {/* <SimpleLineIcon name="microphone" /> */}
-                    {/* <SimpleLineIcon name="phone" /> */}
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          </>
-        </TouchableWithoutFeedback>
-      </View>
-
-      {/* {visible ? <Text>i am visible</Text> : <Text>i am not visible</Text>} */}
-    </SafeAreaView>
+        {/* {visible ? <Text>i am visible</Text> : <Text>i am not visible</Text>} */}
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 };
 
@@ -691,13 +761,51 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   replyMessageBar: {
-    position: 'absolute',
-    top: 250,
-    left: 17,
-    width: 200,
-    height: 50,
+    // position: 'absolute',
+    // top: 350,
+    // left: 17,
+    width: '90%',
+
     backgroundColor: 'black',
+    // borderRadius: 8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+
+    alignSelf: 'center',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    padding: 15,
+    marginBottom: 10,
+    // elevation: 5,
   },
+  replyMessageBar__left: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  replyBtn__icon: {
+    fontSize: 24,
+    color: 'lightblue',
+  },
+  replyMessageBar__right: {
+    flex: 1,
+  },
+  senderOfMsgText: {
+    fontSize: 18,
+    fontFamily: 'Inter-Regular',
+    color: 'white',
+    marginBottom: 4,
+  },
+  originalMessageText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Light',
+    color: 'lightgrey',
+  },
+  closeReplyBarBtn__icon: {
+    fontSize: 20,
+    color: 'white',
+  },
+
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -13,7 +13,6 @@ import {
   Keyboard,
 } from 'react-native';
 import VerifyOtpScreen from './VerifyOtpScreen';
-import ProfileScreen from './ProfileScreen';
 import {useNavigation} from '@react-navigation/native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 
@@ -36,17 +35,23 @@ export default function PhoneNumberScreen(props) {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (phoneNumber.length == 0 || phoneNumber.length < 10) {
-      setError(null);
-    } else if (phoneNumber.length == 10) {
-      setError('valid number');
-    } else if (phoneNumber.length > 10) {
-      setError('invalid number');
+    let isMounted = true;
+    if (isMounted) {
+      if (phoneNumber.length == 0 || phoneNumber.length < 10) {
+        setError(null);
+      } else if (phoneNumber.length == 10) {
+        setError('valid number');
+      } else if (phoneNumber.length > 10) {
+        setError('invalid number');
+      }
     }
+    return () => {
+      isMounted = false;
+    };
   }, [phoneNumber]);
 
   useEffect(() => {
-    var isMounted = true;
+    let isMounted = true;
 
     if (isMounted) {
       const seconds = 15;
@@ -77,7 +82,6 @@ export default function PhoneNumberScreen(props) {
         const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
         setConfirm(prevConfirm => confirmation);
         setLoading(prevLoading => false);
-
       } else {
         setError(prevError => 'invalid number');
         setLoading(prevLoading => false);

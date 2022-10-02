@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect, useEffect} from 'react';
+import React, {useState, useLayoutEffect, useEffect,useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,12 +14,15 @@ import {
 } from '@react-navigation/drawer';
 import auth from '@react-native-firebase/auth';
 import FastImage from 'react-native-fast-image';
+import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import {NavigationContainer} from '@react-navigation/native';
 import {useNavigation} from '@react-navigation/native';
-import {Linking} from 'react-native';
+import { Linking } from 'react-native';
+import {DarkModeContext} from '../Context/DarkModeContext';
+
 
 var colors = {
   darkBlue: '#222831',
@@ -36,6 +39,8 @@ const CustomDrawer = props => {
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [user, setUser] = useState(null);
   const [switchValue, setSwitchValue] = useState(false);
+  const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
+
 
   useLayoutEffect(() => {
     let isCancelled = false;
@@ -45,9 +50,11 @@ const CustomDrawer = props => {
         if (!isCancelled) {
           const response = await firestore()
             .collection('Users')
-            .where('uid', '==', auth().currentUser.uid.toString())
+            .doc(auth().currentUser.uid)
             .get();
-          const userDoc = response.docs[0]._data;
+
+          const userDoc = response._data;
+
           if (userDoc && userDoc.photoURL) {
             const photoURL = userDoc.photoURL;
 
@@ -69,7 +76,7 @@ const CustomDrawer = props => {
     return () => {
       isCancelled = true;
     };
-  }, [profileImageUrl]);
+  }, [props]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -85,7 +92,7 @@ const CustomDrawer = props => {
             }}
           />
 
-          <Text style={styles.profileDisplayName}>{user?.displayName}</Text>
+          <Text numberOfLines={1} style={styles.profileDisplayName}>{user?.displayName}</Text>
         </View>
         {/* <DrawerItemList {...props} /> */}
         {/* <DrawerItemList {...props}></DrawerItemList> */}
@@ -133,17 +140,29 @@ const CustomDrawer = props => {
             <FeatherIcon style={styles.drawerItem__icon} name="moon" />
             <Switch
               style={styles.switch}
-              value={switchValue}
+              value={darkMode}
               trackColor={{false: 'black', true: 'grey'}}
               thumbColor={switchValue ? 'black' : 'lightgrey'}
-              onValueChange={() => setSwitchValue(prev => !prev)}
+              onValueChange={() => toggleDarkMode()}
             />
 
             {/* <Text style={styles.drawerItem__text}>theme</Text> */}
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.drawerItem}
-            onPress={() => auth().signOut()}>
+            onPress={async () => {
+              try {
+                auth().signOut();
+                await firestore()
+                  .collection('Users')
+                  .doc(auth().currentUser.uid)
+                  .update({
+                    status: firebase.firestore.FieldValue.serverTimestamp(),
+                  });
+              } catch (err) {
+                console.log(err);
+              }
+            }}>
             <FeatherIcon style={styles.drawerItem__icon} name="log-out" />
 
             <Text style={styles.drawerItem__text}>log out</Text>
@@ -176,8 +195,8 @@ const styles = StyleSheet.create({
   },
   profileDisplayName: {
     color: '#1E1E1E',
-    fontFamily: 'Inter-Light',
-    fontSize: 30,
+    fontFamily: 'Inter-Bold',
+    fontSize: 25,
   },
 
   drawerItemList: {

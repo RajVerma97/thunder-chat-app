@@ -84,7 +84,7 @@ const SearchScreen = props => {
     };
   }, []);
 
-  const search = async(query) => {
+  const search = async data => {
     console.log('search for ' + query);
     query = query.toLowerCase();
     console.log('query' + query);
@@ -92,8 +92,6 @@ const SearchScreen = props => {
     //  const conversations = await firestore()
     //         .collection('Conversations')
     //         .get();
-
-
 
     // setConversations(prevConversations =>
     //   prevConversations.filter(conversation => {
@@ -163,7 +161,7 @@ const SearchScreen = props => {
                 <SearchConversation
                   foundMessage={foundMessage}
                   query={searchText}
-                  data={search(data)}
+                  conversations={search(conversations)}
                 />
               </TouchableOpacity>
             );

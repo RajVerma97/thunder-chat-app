@@ -18,6 +18,7 @@ import Contacts from 'react-native-contacts';
 import {useNavigation} from '@react-navigation/native';
 import Contact from '../components/Contact';
 import {ConversationsContext} from '../Context/ConversationsContext';
+import LottieView from 'lottie-react-native';
 
 const ContactScreen = () => {
   const navigation = useNavigation();
@@ -105,7 +106,7 @@ const ContactScreen = () => {
                 // const userList = setUserList(prevUserList);
                 setUserList(prevUserList => {
                   //   console.log(prevUserList);
-                  var filteredArray = prevUserList.filter(o =>
+                  var filteredArray = prevUserList?.filter(o =>
                     list.some(({phoneNumber}) => o.phoneNumber === phoneNumber),
                   );
                   return filteredArray;
@@ -179,9 +180,6 @@ const ContactScreen = () => {
 
         const response = await firestore().collection('Conversations').add({
           participants: participants,
-          messages: [],
-          lastMessage: {},
-          unSeenNumbers: 0,
 
           wallpaper: '',
         });
@@ -234,8 +232,23 @@ const ContactScreen = () => {
         Contacts on Thunder
       </Text>
       {loading && <ActivityIndicator size={30} />}
+      {!loading ? (
+        userList?.length === 0 && (
+          <View style={styles.emptyWrapper}>
+            <LottieView
+              autoPlay
+              loop
+              source={require('../assets/lottie/noDataFound.json')}
+              style={{width: 260, height: 260}}
+            />
+            <Text style={styles.emptyWrapper__text}>no contacts found</Text>
+          </View>
+        )
+      ) : (
+        <></>
+      )}
+
       <ScrollView style={styles.contactsContainers}>
-        {userList?.length === 0 && <Text>no contacts</Text>}
         {userList?.length > 0 &&
           userList?.map((contact, id) => {
             return (
@@ -256,7 +269,7 @@ export default memo(ContactScreen);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F1F1',
+    backgroundColor: '#f1f1f1',
     // paddingTop: 30,
     // justifyContent: 'center',
     alignItems: 'center',
@@ -273,5 +286,20 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '90%',
     // alignItems: 'center',
+  },
+  emptyWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: 'blue',
+    padding: 10,
+
+    height: 450,
+  },
+  emptyWrapper__text: {
+    color: 'tomato',
+    fontSize: 22,
+    fontFamily: 'Inter-Medium',
+    marginTop: 30,
+    textTransform: 'capitalize',
   },
 });

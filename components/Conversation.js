@@ -1,7 +1,9 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import React from 'react';
+import {useState, useEffect} from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
+import firestore from '@react-native-firebase/firestore';
 
 import moment from 'moment';
 import auth from '@react-native-firebase/auth';
@@ -9,29 +11,64 @@ import DoubleCheck from './DoubleCheck';
 
 const Conversation = props => {
   const conversation = props.conversation;
-  // const foundMessage = props.foundMessage;
-  // const query = props.query;
+  const conversationId = conversation.conversationId;
+  const [lastMessage, setLastMessage] = useState({});
+  const [unReadMessagesCount, setUnReadMessagesCount] = useState(0);
 
-  const lastMessage = conversation.messages[conversation.messages.length - 1];
+  useEffect(() => {
+    let isMounted = true;
+    // console.log('get messsages in chat screen ');
+    const getMessages = async () => {
+      try {
+        if (isMounted) {
+          // console.log(`conversation id: ${conversationId}`);
+          firestore()
+            .collection('Messages')
+            .where('conversationId', '==', conversationId)
+            .orderBy('createdAt', 'asc')
+            .onSnapshot(snapshot => {
+              if (snapshot && snapshot._docs) {
+                // setMessages(snapshot._docs.map(doc => doc._data));
+                var messages = [];
+                snapshot._docs.map(doc => messages.push(doc._data));
+                // console.log(messages);
+                if (messages.length !== 0) {
+                  const lastMessage = messages[messages.length - 1];
+                  console.log(lastMessage);
+                  setLastMessage(lastMessage);
+                }
+
+                // setText(lastMessage.text);
+                const unReadMessages = messages.filter(message => {
+                  if (!message.isRead) {
+                    return message;
+                  }
+                });
+                const unReadMessagesCount = unReadMessages.length;
+                setUnReadMessagesCount(unReadMessagesCount);
+              }
+            });
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getMessages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [conversation]);
+
+  // const lastMessage = messages[-1];
+
   var receiver;
   if (auth().currentUser.uid === conversation.participants[0].uid) {
     receiver = conversation.participants[1];
   } else {
     receiver = conversation.participants[0];
   }
-  // console.log(receiver);
-
-  const getUnReadMessageCount = () => {
-    const messages = conversation.messages;
-    // console.log(messages);
-    const unReadMessages = messages.filter(message => {
-      if (!message.isRead) {
-        return message;
-      }
-    });
-    const unReadMessagesCount = unReadMessages.length;
-    return unReadMessagesCount;
-  };
 
   return (
     <View style={styles.conversation}>
@@ -46,21 +83,15 @@ const Conversation = props => {
             : require('../assets/images/uploadPhoto.png')
         }
       />
-      {/* <Image
-        style={styles.conversation__image}
-        source={{
-          uri: receiver.photoURL
-            ? receiver.photoURL
-            : 'https://cdn-icons.flaticon.com/png/128/3177/premium/3177440.png?token=exp=1658665759~hmac=4e34310b6a73c6ead296625199738d20',
-        }}
-      /> */}
+
       <View style={styles.conversation__middle}>
         <Text numberOfLines={1} style={styles.conversation__displayName}>
           {receiver.displayName}
         </Text>
+
         <View style={styles.conversation__middleBottom}>
-          {lastMessage &&
-            (lastMessage.isRead ? (
+          {lastMessage.text || lastMessage.image || lastMessage.video ? (
+            lastMessage.isRead ? (
               <DoubleCheck />
             ) : (
               <TouchableOpacity>
@@ -69,11 +100,29 @@ const Conversation = props => {
                   name="check"
                 />
               </TouchableOpacity>
-            ))}
+            )
+          ) : null}
 
-          <Text numberOfLines={1} style={styles.conversation__lastMessage}>
-            {lastMessage?.text}
-          </Text>
+          {lastMessage.image ? (
+            <Image
+              style={styles.lastMsgImage}
+              source={{uri: lastMessage?.image}}
+            />
+          ) : (
+            <></>
+          )}
+          {lastMessage.video ? (
+            <Text style={[styles.conversation__lastMessage, {color: 'blue'}]}>
+              video
+            </Text>
+          ) : (
+            <></>
+          )}
+          {lastMessage.text ? (
+            <Text numberOfLines={1} style={styles.conversation__lastMessage}>
+              {lastMessage?.text}
+            </Text>
+          ) : null}
         </View>
       </View>
       <View style={styles.conversation__right}>
@@ -82,18 +131,20 @@ const Conversation = props => {
             {moment(lastMessage?.createdAt?.seconds * 1000).format('HH:mm')}
           </Text>
         )}
-        {lastMessage?.senderUid && (
-          <View style={styles.rightBottom}>
-            {!(auth().currentUser.uid === lastMessage?.senderUid) &&
-              getUnReadMessageCount() > 0 && (
-                <View style={styles.unseenNumbersContainer}>
-                  <Text style={styles.unseenNumbersContainer__text}>
-                    {getUnReadMessageCount()}
-                  </Text>
-                </View>
-              )}
-          </View>
-        )}
+
+        <View style={styles.rightBottom}>
+          {auth().currentUser.uid !== lastMessage?.senderUid ? (
+            unReadMessagesCount > 0 && (
+              <View style={styles.unseenNumbersContainer}>
+                <Text style={styles.unseenNumbersContainer__text}>
+                  {unReadMessagesCount}
+                </Text>
+              </View>
+            )
+          ) : (
+            <></>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -139,15 +190,29 @@ const styles = StyleSheet.create({
 
     flex: 1,
 
-    marginLeft: 12,
-    marginRight: 12,
+    marginLeft: 16,
+    marginRight: 16,
   },
   conversation__displayName: {
     fontSize: 18,
     fontFamily: 'Inter-Semibold',
     color: 'black',
+
     // paddingBottom:4,
     // marginBottom: 4,
+  },
+  lastMsgImage: {
+    width: 30,
+    height: 30,
+    // borderWidth: 5,
+    borderColor: 'blue',
+    borderRadius: 3,
+    // borderColor: 'black',
+    // borderWidth: 1,
+    // marginTop:5,
+    // padding: 20,
+    // alignSelf:'flex-end'
+    marginTop: 1,
   },
   conversation__middleBottom: {
     flexDirection: 'row',

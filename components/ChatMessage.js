@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Modal,
-  Pressable,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -21,6 +22,18 @@ import {set} from 'react-native-reanimated';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import DoubleCheck from './DoubleCheck';
+import Hyperlink from 'react-native-hyperlink';
+import RNFetchBlob from 'react-native-fetch-blob';
+import PushNotification from 'react-native-push-notification';
+
+// import * as Progress from 'react-native-progress';
+import ProgressBar from 'react-native-progress/Bar';
+import ProgressCircle from 'react-native-progress/Circle';
+import ProgressCircleSnail from 'react-native-progress/CircleSnail';
+import LottieView from 'lottie-react-native';
+import FileViewer from 'react-native-file-viewer';
+import RNFS from 'react-native-fs';
+
 const ChatMessage = props => {
   // console.log('chat message rendering');
   const {
@@ -32,38 +45,50 @@ const ChatMessage = props => {
     reply,
     image,
     isRead,
+    video,
     conversationId,
   } = props.message;
+  // console.log('frrom chat message screeen');
+ 
   const receiverUid = props.receiverUid;
   const likeMessage = props.likeMessage;
   const unLikeMessage = props.unLikeMessage;
   const deleteMessage = props.deleteMessage;
   const replyMessage = props.replyMessage;
+  const receiver = props.receiver;
 
   const [modalToggle, setModalToggle] = useState(false);
   const [lastPress, setLastPress] = useState(0);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(null);
   const [hasRead, setHasRead] = useState(false);
+  const [transferred, setTransferred] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+
 
   useEffect(() => {
     // if(senderUid===receiver)
     let isMounted = true;
     const demo = async () => {
-      if (auth().currentUser.uid !== senderUid) {
-        //receiver
-        //  handleNotification(message);
+      try {
+        if (auth().currentUser.uid !== senderUid) {
+          //receiver
 
-        const doc = await firestore()
-          .collection('Messages')
-          .doc(messageId)
-          .update({isRead: true});
+          handleNotification(text, image, video);
 
-        // const doc=await firestore().collection('Conversations').doc(conversat)
-        setHasRead(prevHasRead => true);
+          const doc = await firestore()
+            .collection('Messages')
+            .doc(messageId)
+            .update({isRead: true});
 
-        //update the seen just now
-      } else {
-        // console.log('sender');
+          setHasRead(prevHasRead => true);
+
+        } 
+      } catch (err) {
+        console.log(err);
       }
     };
     demo();
@@ -73,34 +98,46 @@ const ChatMessage = props => {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     const getImageUrl = async () => {
       try {
-        if (image !== '') {
-          //upload image
-          const uri = image;
+        if (isMounted) {
+          if (image !== '') {
+            //upload image
+            // setUploadingImage(true);
+            setUploading(true);
 
-          const imageName = uri.substring(uri.lastIndexOf('/') + 1);
-          const uploadUri =
-            Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+            const uri = image;
 
-          const task = storage().ref(imageName).putFile(uploadUri);
+            const imageName = uri.substring(uri.lastIndexOf('/') + 1);
+            const uploadUri =
+              Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+            // setUploadingImage(true);
 
-          // set progress state
-          task.on('state_changed', snapshot => {
-            // setTransferred(
-            //     Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 10000
-            // );
-          });
+            setTransferred(0);
 
-          await task;
+            const task = storage().ref(imageName).putFile(uploadUri);
 
-          const filename = image.split('Pictures/')[1];
+            // set progress state
+            task.on('state_changed', snapshot => {
+              setTransferred(
+                Math.round(snapshot.bytesTransferred / snapshot.totalBytes) *
+                  10000,
+              );
+            });
 
-          const url = await storage()
-            .ref('/' + filename)
-            .getDownloadURL();
+            await task;
+            setUploading(false);
+            // setUploadingImage(false);
 
-          setImageUrl(prevImageUrl => url);
+            const filename = image.split('Pictures/')[1];
+
+            const url = await storage()
+              .ref('/' + filename)
+              .getDownloadURL();
+
+            setImageUrl(prevImageUrl => url);
+          }
         }
       } catch (err) {
         console.log(err);
@@ -108,6 +145,63 @@ const ChatMessage = props => {
     };
 
     getImageUrl();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  useEffect(() => {
+    let isMounted = true;
+    const getVideoUrl = async () => {
+      console.log('get video url');
+      try {
+        if (isMounted) {
+          if (video !== '') {
+            //upload video
+            setUploading(true);
+            const uri = video;
+
+            const videoName = uri.substring(uri.lastIndexOf('/') + 1);
+            console.log('videoName ' + videoName);
+            const uploadUri =
+              Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+            setTransferred(0);
+
+            const task = storage().ref(videoName).putFile(uploadUri);
+
+            // set progress state
+            task.on('state_changed', snapshot => {
+              setTransferred(
+                Math.round(snapshot.bytesTransferred / snapshot.totalBytes) *
+                  10000,
+              );
+            });
+
+            await task;
+            setUploading(false);
+            console.log('video is ' + video);
+            // setLoading(true);
+
+            const filename = video.split('picker/')[1];
+            console.log('filename ' + filename);
+
+            const url = await storage()
+              .ref('/' + filename)
+              .getDownloadURL();
+            console.log('url ' + url);
+            // setLoading(false);
+
+            setVideoUrl(prevVideoUrl => url);
+          }
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getVideoUrl();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const openModal = () => {
@@ -122,9 +216,9 @@ const ChatMessage = props => {
     });
   };
 
-  const forwardMessage = async messageId => {
-    // console.log('forward message ' + messageId);
-  };
+  // const forwardMessage = async messageId => {
+  //   // console.log('forward message ' + messageId);
+  // };
   const onPress = () => {
     var time = new Date().getTime();
     var delta = time - lastPress;
@@ -153,39 +247,33 @@ const ChatMessage = props => {
             justifyContent: 'center',
           }}>
           <TouchableWithoutFeedback>
-            <View
-              style={{
-                backgroundColor: 'black',
-                width: 200,
-                padding: 20,
-                borderRadius: 12,
-              }}>
+            <View style={styles.modalWrapper}>
               {senderUid === auth().currentUser.uid && (
                 <TouchableOpacity
                   onPress={() => {
                     deleteMessage(messageId);
                     closeModal();
                   }}
-                  style={{marginBottom: 5}}>
-                  <Text>delete message </Text>
+                  style={styles.modalWrapper__item}>
+                  <Text style={styles.modalWrapper__item__text}>
+                    delete message
+                  </Text>
                 </TouchableOpacity>
               )}
 
-              <TouchableOpacity
-                onPress={() => forwardMessage(messageId)}
-                style={{marginBottom: 5}}>
-                <Text>forward messsage</Text>
-              </TouchableOpacity>
+              {text !== '' ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    closeModal();
 
-              <TouchableOpacity
-                onPress={() => {
-                  closeModal();
-
-                  replyMessage(messageId, text);
-                }}
-                style={{marginBottom: 5}}>
-                <Text>reply messsage</Text>
-              </TouchableOpacity>
+                    replyMessage(messageId, text);
+                  }}
+                  style={styles.modalWrapper__item}>
+                  <Text style={styles.modalWrapper__item__text}>
+                    reply messsage
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
 
               {isLiked ? (
                 <TouchableOpacity
@@ -193,8 +281,10 @@ const ChatMessage = props => {
                     unLikeMessage(messageId);
                     closeModal();
                   }}
-                  style={{marginBottom: 5}}>
-                  <Text>unlike messsage</Text>
+                  style={styles.modalWrapper__item}>
+                  <Text style={styles.modalWrapper__item__text}>
+                    unlike messsage
+                  </Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -202,8 +292,10 @@ const ChatMessage = props => {
                     likeMessage(messageId);
                     closeModal();
                   }}
-                  style={{marginBottom: 5}}>
-                  <Text>like messsage</Text>
+                  style={styles.modalWrapper__item}>
+                  <Text style={styles.modalWrapper__item__text}>
+                    like messsage
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -218,57 +310,115 @@ const ChatMessage = props => {
           auth().currentUser.uid === senderUid ? styles.sent : styles.received,
         ]}>
         {reply ? (
-          <View>
-            <Text>{auth().currentUser.displayName}</Text>
-            <Text styles={{color: 'blue'}}>{reply}</Text>
+          <View
+            style={{
+              fontFamily: 'Inter-Semibold',
+              textAlign: 'center',
+              padding: 10,
+              borderRadius: 8,
+            }}>
+            <Text
+              style={{
+                color: 'black',
+                backgroundColor: '#5F6F94',
+                fontSize: 16,
+                borderRadius: 100,
+                padding: 15,
+                color: 'white',
+              }}>
+              {reply}
+            </Text>
           </View>
         ) : (
           <></>
         )}
-        {text && (
-          <Text
-            style={[
-              styles.text,
-              auth().currentUser.uid === senderUid
-                ? styles.sentText
-                : styles.receivedText,
-            ]}>
-            {text}
-          </Text>
-        )}
-        {image !== '' ? (
-          imageUrl ? (
-            <FastImage
-              style={{width: 200, height: 100}}
-              source={{
-                uri: imageUrl,
-                cache: FastImage.cacheControl.immutable,
-              }}
-            />
-          ) : (
-            <Text>loading image...</Text>
-          )
+        {text ? (
+          <Hyperlink linkStyle={{color: 'blue'}} onPress={Linking.openURL}>
+            <Text
+              style={[
+                styles.text,
+                auth().currentUser.uid === senderUid
+                  ? styles.sentText
+                  : styles.receivedText,
+                reply ? {backgroundColor: 'darkgrey'} : null,
+              ]}>
+              {text}
+            </Text>
+          </Hyperlink>
         ) : (
           <></>
         )}
 
-        {/* <Video
-          source={{
-            uri: 'https://statusguide.com/anykreeg/2021/06/yt1s.com-goku-ultra-instinct-form-WhatsApp-status-video-_1080pFHR.mp4',
-          }}
-          style={{width: 200, height: 200}}
-          paused={false}
-          repeat={true}></Video> */}
+        {image !== '' &&
+          (imageUrl ? (
+            <FastImage
+              style={[
+                styles.image,
+                auth().currentUser.uid === senderUid
+                  ? styles.sentImage
+                  : styles.receivedImage,
+              ]}
+              source={{
+                uri: imageUrl,
+                cache: FastImage.cacheControl.web,
+              }}
+            />
+          ) : (
+            <></>
+          ))}
+
+        {uploading && image ? (
+          <View style={styles.imageProgressContainer}>
+            <LottieView
+              style={{width: 100, height: 100}}
+              source={require('../assets/lottie/loadingImage.json')}
+              loop
+              autoPlay
+            />
+          </View>
+        ) : null}
+
+        {video !== '' ? (
+          videoUrl ? (
+            <Video
+              source={{
+                uri: videoUrl,
+              }}
+              style={styles.videoPlayer}
+              paused={false}
+              controls={true}
+              repeat={true}
+            />
+          ) : (
+            <></>
+          )
+        ) : (
+          <></>
+        )}
+        {uploading && video ? (
+          <View style={styles.videoProgressContainer}>
+            <LottieView
+              style={{width: 100, height: 100}}
+              source={require('../assets/lottie/loadingVideo.json')}
+              loop
+              autoPlay
+            />
+          </View>
+        ) : null}
+
         <View style={{flexDirection: 'row', alignSelf: 'flex-end'}}>
-          <Text
-            style={[
-              styles.createdAt,
-              auth().currentUser.uid === senderUid
-                ? styles.sentCreatedAt
-                : styles.receivedCreatedAt,
-            ]}>
-            {moment(createdAt?.seconds * 1000).format('HH:mm')}
-          </Text>
+          {createdAt && (
+            <Text
+              style={[
+                styles.createdAt,
+                auth().currentUser.uid === senderUid
+                  ? styles.sentCreatedAt
+                  : styles.receivedCreatedAt,
+              ]}>
+              {moment(createdAt?.seconds * 1000).format('HH:mm')}
+            </Text>
+          )}
+
           {hasRead ? (
             <DoubleCheck />
           ) : (
@@ -353,6 +503,62 @@ const styles = StyleSheet.create({
   },
   receiverHeartIcon: {
     color: '#F6416C',
+  },
+  image: {
+    width: 160,
+    height: 250,
+    borderWidth: 4,
+    borderRadius: 12,
+    elevation: 5,
+  },
+  sentImage: {
+    borderColor: 'white',
+  },
+  receivedImage: {
+    borderColor: 'white',
+  },
+  imageProgressContainer: {
+    width: 160,
+    height: 250,
+    borderWidth: 4,
+    borderRadius: 12,
+    // elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: 'white',
+    borderColor: 'white',
+  },
+  videoProgressContainer: {
+    width: 200,
+    height: 300,
+    borderWidth: 4,
+    borderRadius: 12,
+    // elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: 'white',
+  },
+  videoPlayer: {
+    width: 200,
+    height: 300,
+    borderWidth: 4,
+    borderRadius: 12,
+    elevation: 5,
+  },
+  modalWrapper: {
+    backgroundColor: 'black',
+    padding: 25,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalWrapper__item: {
+    marginBottom: 10,
+  },
+  modalWrapper__item__text: {
+    fontSize: 16,
+    color: 'white',
+    fontFamily: 'Inter-Regular',
+    textTransform: 'capitalize',
   },
 });
 

@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
 import DoubleCheck from '../components/DoubleCheck';
@@ -8,12 +8,47 @@ import moment from 'moment';
 import auth from '@react-native-firebase/auth';
 
 const SearchConversation = props => {
-  const conversation = props.conversation;
+  const conversations = props.data;
 
   const foundMessage = props.foundMessage;
   const query = props.query;
+  const [lastMessage, setLastMessage] = useState({});
 
-  const lastMessage = conversation.messages[conversation.messages.length - 1];
+  // const lastMessage = conversation.messages[conversation.messages.length - 1];
+  useEffect(() => {
+    let isMounted = true;
+    // console.log('get messsages in chat screen ');
+    const getMessages = async () => {
+      try {
+        if (isMounted) {
+          // console.log(`conversation id: ${conversationId}`);
+          firestore()
+            .collection('Messages')
+            .where('conversationId', '==', conversationId)
+            .orderBy('createdAt', 'asc')
+            .onSnapshot(snapshot => {
+              if (snapshot && snapshot._docs) {
+                // setMessages(snapshot._docs.map(doc => doc._data));
+                var messages = [];
+                snapshot._docs.map(doc => messages.push(doc._data));
+                // console.log(messages);
+                const lastMessage = messages[messages.length - 1];
+                setLastMessage(lastMessage);
+                // setText(lastMessage.text);
+              }
+            });
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getMessages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [conversation]);
   var receiver;
   if (auth().currentUser.uid === conversation.participants[0].uid) {
     receiver = conversation.participants[1];
@@ -21,18 +56,6 @@ const SearchConversation = props => {
     receiver = conversation.participants[0];
   }
   // console.log(receiver);
-
-  const getUnReadMessageCount = () => {
-    const messages = conversation.messages;
-    // console.log(messages);
-    const unReadMessages = messages.filter(message => {
-      if (!message.isRead) {
-        return message;
-      }
-    });
-    const unReadMessagesCount = unReadMessages.length;
-    return unReadMessagesCount;
-  };
 
   return (
     <View style={styles.conversation}>

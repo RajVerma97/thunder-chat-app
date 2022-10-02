@@ -34,34 +34,25 @@ const windowHeight = Dimensions.get('window').height;
 import Conversation from '../components/Conversation';
 import PushNotification from 'react-native-push-notification';
 import {ConversationsContext} from '../Context/ConversationsContext';
+import {DarkModeContext} from '../Context/DarkModeContext';
+import LottieView from 'lottie-react-native';
 
 const WelcomeScreen = props => {
   // console.log('welcome screen rendering');
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const route = useRoute();
-  // const {conversations, setConversations} = useContext(ConversationsContext);
   const [conversations, setConversations] = useState([]);
 
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  //  {
-  //     conversationId: '',
-  //     participants: [],
-  //     receiverDisplayName: '',
-  //     receiverPhotoUrl: '',
-  //     receiverUid: '',
-  //     lastMessage: '',
-  //     unseenNumbers: 0,
-  //     wallpaper: '',
-  //   },
-  // const [conversations, setConversations] = useState([]);
 
-  // const [lastMessage, setLastMessage] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
 
   const videoPlayer = useRef();
 
@@ -107,15 +98,15 @@ const WelcomeScreen = props => {
             padding: 12,
           }}>
           <TouchableOpacity
-            onPress={() =>
-              // console.log(conversations)
-              navigation.navigate('SearchScreen')
-            }>
-            <FeatherIcon name="search" color="white" size={26} />
+            onPress={() => {
+              toggleDarkMode();
+            }}>
+            <FeatherIcon
+              name={darkMode ? 'moon' : 'sun'}
+              color="white"
+              size={26}
+            />
           </TouchableOpacity>
-          {/* <TouchableOpacity>
-            <FeatherIcon name="moon" color="white" size={26} />
-          </TouchableOpacity> */}
         </View>
       ),
     });
@@ -123,34 +114,36 @@ const WelcomeScreen = props => {
 
   useLayoutEffect(() => {
     console.log('get conversations inside useEffect');
-    setIsLoading(prevIsLoading => true);
+
     let isCancelled = false;
+
     const getConversations = async () => {
       try {
         if (!isCancelled) {
+          setIsLoading(prevIsLoading => true);
           const conversations = await firestore()
             .collection('Conversations')
             .get();
 
           let temp = [];
-          conversations._docs.filter(doc => {
+          var x;
+          conversations._docs.forEach(doc => {
             try {
               const conversation = doc._data;
-              //  console.log(conversation);
 
               if (
                 conversation.participants[0].uid === auth().currentUser.uid ||
                 conversation.participants[1].uid === auth().currentUser.uid
               ) {
                 temp.push(conversation);
-                // console.log(conversation.participants);
               }
             } catch (err) {
               console.log(err);
             }
           });
-          // console.log(temp);
+
           setConversations(prevConversations => temp);
+
           setIsLoading(prevIsLoading => false);
         }
       } catch (err) {
@@ -167,43 +160,10 @@ const WelcomeScreen = props => {
   }, [isFocused]);
 
   const enterChat = async (conversationId, conversation) => {
-    var myConversation = conversation;
-    console.log('original conversation');
-    console.log(myConversation);
-    // console.log('enter room:' + conversationId);
     try {
-      // const messages = await firestore().collection('Messages').doc(conversationId);
-
-      // firestore()
-      //   .collection('Messages')
-      //   .where('conversationId', '==', conversationId)
-      //   .orderBy('createdAt', 'asc')
-      //   .onSnapshot(snapshot => {
-      //     if (snapshot && snapshot._docs) {
-      //       var messages = [];
-
-      //       snapshot._docs.map(doc => {
-      //         const message = doc._data;
-
-      //         messages.push(message);
-      //       });
-
-      // myConversation.messages = messages;
-      // const conversationRef = firestore()
-      //   .collection('Conversations')
-      //   .doc(conversationId);
-
-      // // const lastMessage = me;
-
-      // const result = conversationRef
-      //   .update({
-      //     messages: messages,
-      //   })
-      //   .then(res => console.log('updated conversation'));
-
       navigation.navigate('ChatScreen', {
         conversationId: conversationId,
-        conversation: myConversation,
+        conversation: conversation,
       });
     } catch (err) {
       console.log(err);
@@ -212,11 +172,31 @@ const WelcomeScreen = props => {
 
   return (
     <>
-      <SafeAreaView style={styles.container}>
-        {isLoading && <ActivityIndicator size={30} />}
+      <SafeAreaView
+        style={[
+          styles.container,
+          darkMode ? styles.container__dark : styles.container__light,
+        ]}>
+        {!isLoading ? (
+          conversations?.length === 0 && (
+            <View style={styles.emptyWrapper}>
+              <LottieView
+                autoPlay
+                loop
+                source={require('../assets/lottie/emptyBox.json')}
+                style={{width: 260, height: 260}}
+              />
+              <Text style={styles.emptyWrapper__text}>
+                no chats, tap button below to chat
+              </Text>
+            </View>
+          )
+        ) : (
+          <></>
+        )}
+        {isLoading ? <ActivityIndicator size={30} /> : null}
 
         <ScrollView style={styles.conversationContainer}>
-          {conversations?.length === 0 && <Text>no conversation</Text>}
           {conversations?.length > 0 &&
             conversations?.map((conversation, index) => {
               return (
@@ -232,10 +212,12 @@ const WelcomeScreen = props => {
             })}
         </ScrollView>
       </SafeAreaView>
-      <Button
-        title="get contacts"
-        onPress={() => navigation.navigate('ContactScreen')}
-      />
+
+      <TouchableOpacity
+        style={styles.addContactsBtn}
+        onPress={() => navigation.navigate('ContactScreen')}>
+        <FeatherIcon style={styles.addContactsBtn__icon} name="plus" />
+      </TouchableOpacity>
     </>
 
     //   {/* <Video
@@ -269,12 +251,51 @@ const WelcomeScreen = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F1F1',
     paddingTop: 30,
     paddingHorizontal: 25,
   },
-  conversationContainer: {
-    // backgroundColor: 'blue'
+  container__light: {
+    backgroundColor: '#f1f1f1',
+  },
+  container__dark: {
+    backgroundColor: 'black',
+  },
+  addContactsBtn: {
+    position: 'absolute',
+    bottom: 50,
+
+    backgroundColor: '#3E45DF',
+    padding: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 50,
+    alignSelf: 'center',
+  },
+  addContactsBtn__icon: {
+    fontSize: 36,
+    color: 'white',
+  },
+  addContactsBtn__text: {
+    fontWeight: '700',
+    fontFamily: 'Inter-bold',
+    fontSize: 22,
+    color: 'white',
+  },
+  emptyWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    padding: 10,
+
+    height: 450,
+  },
+  emptyWrapper__text: {
+    color: 'tomato',
+    fontSize: 22,
+    fontFamily: 'Inter-Medium',
+    marginTop: 30,
+    textTransform: 'capitalize',
   },
 });
 

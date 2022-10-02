@@ -265,12 +265,17 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:26.3.0')
     // implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-auth'
-
     implementation "androidx.browser:browser:1.2.0"
     implementation 'com.facebook.fresco:fresco:2.0.0'
     implementation 'com.facebook.fresco:animated-gif:2.0.0'
     implementation "androidx.appcompat:appcompat:1.0.0"
+    implementation project(':react-native-document-picker')
+    implementation project(':lottie-react-native')
+    implementation project(':react-native-fs')
+    implementation project(':react-native-file-viewer')
+    implementation project(':react-native-fetch-blob')
     // compile project(':@react-native-community_cameraroll')
+    // compile project (':react-native-document-picker')
     // implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
 
     //noinspection GradleDynamicVersion
