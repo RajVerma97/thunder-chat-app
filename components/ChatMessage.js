@@ -23,7 +23,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import DoubleCheck from './DoubleCheck';
 import Hyperlink from 'react-native-hyperlink';
-import RNFetchBlob from 'react-native-fetch-blob';
+// import RNFetchBlob from 'react-native-fetch-blob';
 import PushNotification from 'react-native-push-notification';
 
 // import * as Progress from 'react-native-progress';
@@ -35,7 +35,7 @@ import FileViewer from 'react-native-file-viewer';
 import RNFS from 'react-native-fs';
 
 const ChatMessage = props => {
-  // console.log('chat message rendering');
+  console.log('chat message rendering');
   const {
     messageId,
     text,
@@ -49,7 +49,7 @@ const ChatMessage = props => {
     conversationId,
   } = props.message;
   // console.log('frrom chat message screeen');
- 
+
   const receiverUid = props.receiverUid;
   const likeMessage = props.likeMessage;
   const unLikeMessage = props.unLikeMessage;
@@ -67,8 +67,6 @@ const ChatMessage = props => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-
-
   useEffect(() => {
     // if(senderUid===receiver)
     let isMounted = true;
@@ -85,8 +83,7 @@ const ChatMessage = props => {
             .update({isRead: true});
 
           setHasRead(prevHasRead => true);
-
-        } 
+        }
       } catch (err) {
         console.log(err);
       }
@@ -406,7 +403,8 @@ const ChatMessage = props => {
           </View>
         ) : null}
 
-        <View style={{flexDirection: 'row', alignSelf: 'flex-end'}}>
+        <View
+          style={{flexDirection: 'row', alignSelf: 'flex-end', marginTop: 5}}>
           {createdAt && (
             <Text
               style={[
@@ -422,7 +420,9 @@ const ChatMessage = props => {
           {hasRead ? (
             <DoubleCheck />
           ) : (
-            <FeatherIcon style={styles.singleCheck} name="check" />
+            auth().currentUser.uid === senderUid && (
+              <FeatherIcon style={styles.singleCheck} name="check" />
+            )
           )}
 
           {isLiked && (
@@ -444,10 +444,10 @@ const ChatMessage = props => {
 };
 const styles = StyleSheet.create({
   box: {
-    maxWidth: 200,
-    marginBottom: 30,
-    // padding: 12,
-    borderRadius: 12,
+    maxWidth: 250,
+    marginBottom: 18,
+    padding: 12,
+    borderRadius: 24,
     alignSelf: 'flex-start',
 
     // elevation: 1,
@@ -456,31 +456,33 @@ const styles = StyleSheet.create({
     // borderWidth: 2,
     // borderColor: '#3E45DF',
     alignSelf: 'flex-end',
+    backgroundColor: '#247BA0',
   },
   received: {
-    //  backgroundColor: 'blue',
+    backgroundColor: '#E2E2E2',
   },
   text: {
     fontSize: 16,
     borderRadius: 100,
-    padding: 15,
+    // padding: 12,
 
     fontFamily: 'Inter-Semibold',
     textAlign: 'center',
+    // marginBottom: 5,
     // elevation: 5,
   },
   sentText: {
     // borderWidth: 2,
     // borderColor: 'black',
 
-    color: 'white',
-    backgroundColor: '#5F6F94',
+    color: '#FFF7E9',
+    // backgroundColor: '#5F6F94',
   },
   receivedText: {
     // borderWidth: 2,
     // borderColor: 'lightblue',
-    backgroundColor: '#222831',
-    color: 'white',
+    // backgroundColor: '#222831',
+    color: '#110B11',
   },
   createdAt: {
     fontSize: 10,
@@ -488,14 +490,14 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   sentCreatedAt: {
-    color: 'black',
+    color: '#DBE2EF',
   },
   receivedCreatedAt: {
     color: 'black',
   },
   singleCheck: {
     marginRight: 5,
-    color: 'black',
+    color: '#DBE2EF',
   },
   heartIcon: {},
   sentHeartIcon: {
@@ -509,7 +511,7 @@ const styles = StyleSheet.create({
     height: 250,
     borderWidth: 4,
     borderRadius: 12,
-    elevation: 5,
+    // elevation: 5,
   },
   sentImage: {
     borderColor: 'white',

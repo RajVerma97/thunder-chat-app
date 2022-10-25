@@ -10,7 +10,7 @@ const Contact = props => {
         source={
           contact?.photoURL
             ? {uri: contact.photoURL}
-            : require('../assets/images/uploadPhoto.png')
+            : require('../assets/images/user.png')
         }
       />
       <View style={styles.contact__info}>

@@ -13,6 +13,8 @@ import React, {
   useEffect,
   useCallback,
   useImperativeHandle,
+  useContext,
+  memo,
 } from 'react';
 import Animated, {
   useAnimatedGestureHandler,
@@ -29,6 +31,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import firestore from '@react-native-firebase/firestore';
 import firebase from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
+import {DarkModeContext} from '../Context/DarkModeContext';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50;
@@ -41,6 +44,9 @@ import Octicons from 'react-native-vector-icons/Octicons';
 
 const MediaBottomSheet = React.forwardRef(
   ({sender, conversationId, messages, setMessages}, ref) => {
+    console.log('media bottomsheet rendering');
+    const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
+
     const translateY = useSharedValue(0);
     const active = useSharedValue(false);
     const context = useSharedValue({y: 0});
@@ -242,7 +248,7 @@ const MediaBottomSheet = React.forwardRef(
           type: [DocumentPicker.types.pdf],
         });
         const pickedDocumentPath = res.uri;
-        
+
         // var unc = Platform.OS == 'ios' ? decodeURIComponent(res.uri) : res.uri;
         // console.log(unc);
         // uploadDocument(pickedDocumentPath);
@@ -315,12 +321,17 @@ const MediaBottomSheet = React.forwardRef(
 
     return (
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
+        <Animated.View
+          style={[
+            styles.bottomSheetContainer,
+            rBottomSheetStyle,
+            darkMode ? {backgroundColor: '#EAEAEA'} : null,
+          ]}>
           <View style={styles.line}></View>
           <View style={styles.mediaContainer}>
             <View style={styles.card}>
               <TouchableOpacity
-                style={styles.media}
+                style={[styles.media]}
                 onPress={() => {
                   selectImage();
                   scrollTo(0);
@@ -336,7 +347,7 @@ const MediaBottomSheet = React.forwardRef(
             </View>
             <View style={styles.card}>
               <TouchableOpacity
-                style={styles.media}
+                style={[styles.media]}
                 onPress={() => {
                   selectVideo();
                   scrollTo(0);
@@ -350,7 +361,7 @@ const MediaBottomSheet = React.forwardRef(
               </TouchableOpacity>
               <Text style={styles.media__text}>video</Text>
             </View>
-            <View style={styles.card}>
+            {/* <View style={styles.card}>
               <TouchableOpacity
                 style={styles.media}
                 onPress={() => {
@@ -365,7 +376,7 @@ const MediaBottomSheet = React.forwardRef(
                 />
               </TouchableOpacity>
               <Text style={styles.media__text}>document</Text>
-            </View>
+            </View> */}
           </View>
         </Animated.View>
       </GestureDetector>
@@ -373,13 +384,13 @@ const MediaBottomSheet = React.forwardRef(
   },
 );
 
-export default MediaBottomSheet;
+export default memo(MediaBottomSheet);
 
 const styles = StyleSheet.create({
   bottomSheetContainer: {
     height: SCREEN_HEIGHT,
     width: '100%',
-    backgroundColor: 'white',
+    backgroundColor: '#EEEEEE',
     position: 'absolute',
     top: SCREEN_HEIGHT,
     zIndex: 1000,
@@ -396,8 +407,9 @@ const styles = StyleSheet.create({
   mediaContainer: {
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 20,
+    justifyContent: 'space-between',
+    paddingVertical: 20,
+    paddingHorizontal: 35,
   },
   card: {
     alignItems: 'center',
@@ -419,7 +431,7 @@ const styles = StyleSheet.create({
   media__text: {
     marginTop: 10,
     color: 'grey',
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Inter-Semibold',
     textTransform: 'capitalize',
     marginTop: 14,

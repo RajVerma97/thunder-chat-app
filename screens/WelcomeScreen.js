@@ -33,12 +33,11 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import Conversation from '../components/Conversation';
 import PushNotification from 'react-native-push-notification';
-import {ConversationsContext} from '../Context/ConversationsContext';
 import {DarkModeContext} from '../Context/DarkModeContext';
 import LottieView from 'lottie-react-native';
 
 const WelcomeScreen = props => {
-  // console.log('welcome screen rendering');
+  console.log('welcome screen rendering');
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const route = useRoute();
@@ -75,13 +74,21 @@ const WelcomeScreen = props => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: 'Thunder',
       headerTitle: () => (
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
-            <FeatherIcon name="menu" color="white" size={26} />
+          <TouchableOpacity
+            onPress={() => navigation.toggleDrawer()}
+            style={{marginRight: 10}}>
+            <FeatherIcon name="menu" color="#EEEEEE" size={28} />
           </TouchableOpacity>
-          <Text>Thunder</Text>
+          <Text
+            style={{
+              fontFamily: 'Inter-Regular',
+              fontSize: 20,
+              color: '#EEEEEE',
+            }}>
+            Thunder
+          </Text>
         </View>
       ),
 
@@ -103,14 +110,14 @@ const WelcomeScreen = props => {
             }}>
             <FeatherIcon
               name={darkMode ? 'moon' : 'sun'}
-              color="white"
-              size={26}
+              color="#EEEEEE"
+              size={24}
             />
           </TouchableOpacity>
         </View>
       ),
     });
-  }, [navigation]);
+  }, [navigation, darkMode]);
 
   useLayoutEffect(() => {
     console.log('get conversations inside useEffect');
@@ -258,13 +265,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f1f1',
   },
   container__dark: {
-    backgroundColor: 'black',
+    backgroundColor: '#393E46',
   },
   addContactsBtn: {
     position: 'absolute',
     bottom: 50,
 
-    backgroundColor: '#3E45DF',
+    backgroundColor: '#3282B8',
     padding: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -14,6 +14,8 @@ import React, {
   useEffect,
   useCallback,
   useImperativeHandle,
+  useContext,
+  memo,
 } from 'react';
 import Animated, {
   useAnimatedGestureHandler,
@@ -25,6 +27,7 @@ import Animated, {
 import {FlatList, PanGestureHandler} from 'react-native-gesture-handler';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import FastImage from 'react-native-fast-image';
+import {DarkModeContext} from '../Context/DarkModeContext';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50;
@@ -35,6 +38,9 @@ const WallpaperBottomSheet = React.forwardRef(
     {backgroundWallpaper, setBackgroundWallpaper, changeBackgroundWallpaper},
     ref,
   ) => {
+    console.log('media bottomsheet rendering');
+    const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
+
     var [wallpapers, setWallpapers] = useState([
       require('../assets/images/wallpaper-1.jpg'),
       require('../assets/images/wallpaper-2.jpg'),
@@ -90,7 +96,12 @@ const WallpaperBottomSheet = React.forwardRef(
 
     return (
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
+        <Animated.View
+          style={[
+            styles.bottomSheetContainer,
+            rBottomSheetStyle,
+            darkMode ? {backgroundColor: '#EAEAEA'} : null,
+          ]}>
           <View style={styles.line}></View>
           <View>
             {/* <Text style={styles.title}>Change Wallpaper</Text> */}
@@ -140,13 +151,13 @@ const WallpaperBottomSheet = React.forwardRef(
   },
 );
 
-export default WallpaperBottomSheet;
+export default memo(WallpaperBottomSheet);
 
 const styles = StyleSheet.create({
   bottomSheetContainer: {
     height: SCREEN_HEIGHT,
     width: '100%',
-    backgroundColor: 'white',
+    backgroundColor: '#EEEEEE',
     position: 'absolute',
     top: SCREEN_HEIGHT,
     zIndex: 100,
@@ -188,7 +199,7 @@ const styles = StyleSheet.create({
   removeWallpaperBtn: {
     // width: 180,
     // height: 70,
-    backgroundColor: 'tomato',
+    backgroundColor: '#1E2022',
     padding: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -200,7 +211,8 @@ const styles = StyleSheet.create({
   },
   removeWallpaperBtn__text: {
     fontFamily: 'Inter-Regular',
-    fontSize: 20,
+    fontSize: 18,
     color: 'white',
+    textTransform: 'capitalize',
   },
 });

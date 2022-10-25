@@ -80,7 +80,7 @@ const Conversation = props => {
                 uri: receiver.photoURL,
                 // cache: FastImage.cacheControl.immutable,
               }
-            : require('../assets/images/uploadPhoto.png')
+            : require('../assets/images/user.png')
         }
       />
 
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Regular',
     color: '#6F6E77',
-    marginBottom: 12,
+    marginBottom: 5,
   },
 
   rightBottom: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 50,
-    backgroundColor: '#6C63FF',
+    backgroundColor: '#3E45DF',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -16,6 +16,7 @@ import {
   Modal,
   useWindowDimensions,
   ImageBackground,
+  FlatList,
 } from 'react-native';
 import React from 'react';
 import {
@@ -25,6 +26,7 @@ import {
   useRef,
   useCallback,
   useMemo,
+  useContext,
 } from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useRoute} from '@react-navigation/native';
@@ -55,12 +57,17 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import {
-  FlatList,
   GestureHandlerRootView,
   PanGestureHandler,
 } from 'react-native-gesture-handler';
 import WallpaperBottomSheet from '../components/WallpaperBottomSheet';
+import {DarkModeContext} from '../Context/DarkModeContext';
 
+// import EmojiInput from 'react-native-emoji-input';
+import EmojiData from '../emojiData.json';
+
+var emojiArr = Object.keys(EmojiData);
+import Emoji from '../components/Emoji';
 
 const ChatScreen = props => {
   console.log('chat screen rendering');
@@ -72,14 +79,13 @@ const ChatScreen = props => {
   const mediaBottomSheetRef = useRef();
 
   // const conversationId = conversation.conversationId;
- 
+
   var receiver;
   if (auth().currentUser.uid === conversation.participants[0].uid) {
     receiver = conversation.participants[1];
   } else {
     receiver = conversation.participants[0];
   }
- 
 
   const sender = auth().currentUser;
 
@@ -88,12 +94,16 @@ const ChatScreen = props => {
   const inputRef = useRef();
   const scrollViewRef = useRef();
   const [replyMessageBar, setReplyMessageBar] = useState(false);
+  const [emojiSelectorToggle, setEmojiSelectorToggle] = useState(false);
+
   const [reply, setReply] = useState('');
   const [clickedImage, setClickedImage] = useState(null);
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [backgroundWallpaper, setBackgroundWallpaper] = useState(null);
   const [topMenuToggle, setTopMenuToggle] = useState(false);
+  const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
+
   const isFocused = useIsFocused();
   const dimensions = useWindowDimensions();
   const top = useSharedValue(dimensions.height);
@@ -101,11 +111,9 @@ const ChatScreen = props => {
     setTopMenuToggle(false);
   };
   const openTopMenu = () => {
-   
     setTopMenuToggle(true);
   };
   const changeBackgroundWallpaper = async item => {
-  
     await firestore()
       .collection('Conversations')
       .doc(conversationId)
@@ -114,8 +122,10 @@ const ChatScreen = props => {
   };
 
   const showMediaBottomSheet = () => {
-    
     Keyboard.dismiss();
+    if (emojiSelectorToggle) {
+      setEmojiSelectorToggle(false);
+    }
     const isActive = mediaBottomSheetRef?.current?.isActive();
     if (isActive) {
       mediaBottomSheetRef?.current?.scrollTo(0);
@@ -123,12 +133,20 @@ const ChatScreen = props => {
       mediaBottomSheetRef?.current?.scrollTo(-300);
     }
   };
+
+  const showEmojiBottomSheet = () => {
+    Keyboard.dismiss();
+
+    setEmojiSelectorToggle(prevEmojiSelectorToggle => !prevEmojiSelectorToggle);
+  };
+
   const changeTheme = useCallback(() => {
     Keyboard.dismiss();
-  
+    if (emojiSelectorToggle) {
+      setEmojiSelectorToggle(false);
+    }
     const isActive = wallpaperBottomSheetRef?.current?.isActive();
-   
-    
+
     wallpaperBottomSheetRef?.current?.scrollTo(0);
     if (isActive) {
       wallpaperBottomSheetRef?.current?.scrollTo(0);
@@ -145,7 +163,7 @@ const ChatScreen = props => {
     // });
   }, [wallpaperBottomSheetRef]);
 
-    const handleNotification = (message) => {
+  const handleNotification = message => {
     let myMsg = '';
     if (message.text !== '') {
       myMsg = message.text;
@@ -164,7 +182,6 @@ const ChatScreen = props => {
   const deleteAllMessages = async () => {
     // const result = await firestore().collection('Messsages').where('conversation');
     // setMessages(prevMessages=>prevMessages.forEach())
-  
 
     firestore()
       .collection('Messages')
@@ -174,16 +191,12 @@ const ChatScreen = props => {
         if (snapshot && snapshot._docs) {
           var msgs = [];
 
-         
           snapshot._docs.map(doc => msgs.push(doc._data));
-         
-          for (msg of msgs) {
-           
 
+          for (msg of msgs) {
             let messageId = msg.messageId;
-          
+
             await firestore().collection('Messages').doc(messageId).delete();
-           
           }
           setMessages(prevMessages => []);
 
@@ -200,7 +213,6 @@ const ChatScreen = props => {
   }, []);
 
   useLayoutEffect(() => {
-
     navigation.setOptions({
       title: 'yo',
       headerTitleAlign: 'left',
@@ -222,7 +234,7 @@ const ChatScreen = props => {
                     uri: receiver.photoURL,
                     // cache: FastImage.cacheControl.immutable,
                   }
-                : require('../assets/images/uploadPhoto.png')
+                : require('../assets/images/user.png')
             }
           />
           <View>
@@ -252,12 +264,10 @@ const ChatScreen = props => {
     const updateUnReadMessages = async () => {
       try {
         const lastMessage = messages[messages?.length - 1];
-      
 
         if (auth().currentUser.uid !== lastMessage?.senderUid) {
-        
           const messages = conversation.messages;
-         
+
           messages?.map(async message => {
             if (!message.isRead) {
               // message.isRead = true;
@@ -277,18 +287,14 @@ const ChatScreen = props => {
     updateUnReadMessages();
   }, []);
 
- 
-
   useEffect(() => {
     let isMounted = true;
 
-  
     const getMessages = async () => {
       try {
         if (isMounted) {
           setLoading(prevLoading => true);
 
-         
           firestore()
             .collection('Messages')
             .where('conversationId', '==', conversationId)
@@ -298,7 +304,12 @@ const ChatScreen = props => {
                 if (snapshot._docs.length === 0) {
                   setLoading(prevLoading => false);
                 }
-                setMessages(snapshot._docs.map(doc => doc._data));
+                setMessages(
+                  snapshot._docs.map(doc => {
+                    // console.log(doc._data);
+                    return doc._data;
+                  }),
+                );
 
                 setLoading(prevLoading => false);
               }
@@ -385,9 +396,9 @@ const ChatScreen = props => {
         const myDoc = await docRef.get();
         const updatedMsg = myDoc._data;
 
-         if (auth().currentUser.uid !== sender.uid) {
-            handleNotification(updatedMsg);
-          }
+        if (auth().currentUser.uid !== sender.uid) {
+          handleNotification(updatedMsg);
+        }
 
         setMessages(prevMessages => [...prevMessages, updatedMsg]);
 
@@ -400,9 +411,7 @@ const ChatScreen = props => {
 
   const sendMsg = useCallback(
     async text => {
-     
       try {
-     
         if (text !== '') {
           var message;
           if (reply === '') {
@@ -428,7 +437,6 @@ const ChatScreen = props => {
               reply: reply,
             };
           }
-      
 
           const response = await firestore()
             .collection('Messages')
@@ -445,28 +453,21 @@ const ChatScreen = props => {
             handleNotification(updatedMsg);
           }
 
-
           setMessages(prevMessages => [...prevMessages, updatedMsg]);
-
 
           setReply('');
           setText('');
 
-         
           setReplyMessageBar(false);
         }
       } catch (err) {
         console.log(err);
       }
-    
 
       Keyboard.dismiss();
-
-      
     },
     [text],
   );
-  
 
   const deleteMessage = useCallback(
     async messageId => {
@@ -516,11 +517,9 @@ const ChatScreen = props => {
           .collection('Messages')
           .doc(messageId)
           .update({reply: reply});
-       
 
         setReply(repliedContent);
 
-      
         inputRef.current.focus();
         setReplyMessageBar(true);
       } catch (err) {
@@ -566,7 +565,11 @@ const ChatScreen = props => {
           setMessages={setMessages}
         />
 
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            darkMode ? {backgroundColor: '#393E46'} : null,
+          ]}>
           <TopMenuModal
             topMenuToggle={topMenuToggle}
             closeTopMenu={closeTopMenu}
@@ -642,24 +645,36 @@ const ChatScreen = props => {
                 )}
 
                 <View style={styles.footer}>
-                  <TouchableOpacity onPress={() => openCamera()}>
-                    <FeatherIcon
-                      style={styles.cameraIcon}
-                      name="camera"
-                      color="black"
-                      size={28}
-                    />
-                  </TouchableOpacity>
+                  {emojiSelectorToggle ? (
+                    <TouchableOpacity onPress={() => showEmojiBottomSheet()}>
+                      <AntDesign name="closecircleo" color="black" size={30} />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity onPress={() => showEmojiBottomSheet()}>
+                      <Entypo name="emoji-happy" color="black" size={30} />
+                    </TouchableOpacity>
+                  )}
 
                   <TextInput
                     autoFocus={true}
                     ref={inputRef}
                     value={text}
-                    onChangeText={t => setText(t)}
+                    onChangeText={t => {
+                      setText(t);
+
+                      // else {
+                      //   setEmoji(t);
+                      // }
+                    }}
                     onSubmitEditing={() => sendMsg(text)}
                     style={styles.textInput}
                     placeholder="message..."
                     placeholderTextColor="grey"
+                    onTouchStart={() => {
+                      if (emojiSelectorToggle) {
+                        setEmojiSelectorToggle(false);
+                      }
+                    }}
                     // selectionColor={'lightblue'}
                   />
                   {text ? (
@@ -682,18 +697,41 @@ const ChatScreen = props => {
                     //   title="send msg"
                     // />
                     <>
-                      <TouchableOpacity onPress={() => showMediaBottomSheet()}>
+                      <TouchableOpacity onPress={() => openCamera()}>
+                        <FeatherIcon
+                          style={styles.cameraIcon}
+                          name="camera"
+                          color="black"
+                          size={28}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{marginLeft: 8}}
+                        onPress={() => showMediaBottomSheet()}>
                         <AntDesign name="picture" color="black" size={30} />
                       </TouchableOpacity>
                     </>
                   )}
                 </View>
+                {emojiSelectorToggle ? (
+                  <View style={styles.emojiSelectorWrapper}>
+                    <FlatList
+                      data={emojiArr}
+                      renderItem={({item, index}) => {
+                        return (
+                          <Emoji item={item} index={index} setText={setText} />
+                        );
+                      }}
+                      numColumns={6}
+                      keyExtractor={(item, index) => index.toString()}
+                      initialNumToRender={7}
+                    />
+                  </View>
+                ) : null}
               </ImageBackground>
             </>
           </TouchableWithoutFeedback>
         </View>
-
-        {/* {visible ? <Text>i am visible</Text> : <Text>i am not visible</Text>} */}
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -704,7 +742,7 @@ export default ChatScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F1F1',
+    backgroundColor: 'white',
   },
 
   footer: {
@@ -712,7 +750,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     alignSelf: 'center',
-    width: '90%',
+    width: '92%',
     // padding: 12,
     paddingHorizontal: 20,
     backgroundColor: 'white',
@@ -842,5 +880,13 @@ const styles = StyleSheet.create({
   sendBtn__icon: {
     transform: [{rotate: '45deg'}],
     color: 'white',
+  },
+
+  emojiSelectorWrapper: {
+    width: '100%',
+    height: 400,
+    backgroundColor: 'white',
+    alignSelf: 'center',
+    paddingHorizontal: 16,
   },
 });

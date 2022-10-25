@@ -17,7 +17,8 @@ import {PermissionsAndroid} from 'react-native';
 import Contacts from 'react-native-contacts';
 import {useNavigation} from '@react-navigation/native';
 import Contact from '../components/Contact';
-import {ConversationsContext} from '../Context/ConversationsContext';
+import {DarkModeContext} from '../Context/DarkModeContext';
+
 import LottieView from 'lottie-react-native';
 
 const ContactScreen = () => {
@@ -26,7 +27,7 @@ const ContactScreen = () => {
   const [userList, setUserList] = useState(null);
   const [loading, setLoading] = useState(false);
   const [contacts, setContacts] = useState('');
-  // const {conversations, setConversations} = useContext(ConversationsContext);
+  const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
 
   const user = auth().currentUser;
 
@@ -227,8 +228,14 @@ const ContactScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text numberOfLines={1} style={styles.title}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        darkMode ? styles.container__dark : styles.container__light,
+      ]}>
+      <Text
+        numberOfLines={1}
+        style={[styles.title, darkMode ? {color: 'white'} : null]}>
         Contacts on Thunder
       </Text>
       {loading && <ActivityIndicator size={30} />}
@@ -269,11 +276,19 @@ export default memo(ContactScreen);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f1f1',
+
     // paddingTop: 30,
     // justifyContent: 'center',
     alignItems: 'center',
   },
+
+  container__light: {
+    backgroundColor: '#f1f1f1',
+  },
+  container__dark: {
+    backgroundColor: '#393E46',
+  },
+
   title: {
     fontSize: 28,
     color: 'black',

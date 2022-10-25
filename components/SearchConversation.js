@@ -67,7 +67,7 @@ const SearchConversation = props => {
                 uri: receiver.photoURL,
                 // cache: FastImage.cacheControl.immutable,
               }
-            : require('../assets/images/uploadPhoto.png')
+            : require('../assets/images/user.png')
         }
       />
       {/* <Image

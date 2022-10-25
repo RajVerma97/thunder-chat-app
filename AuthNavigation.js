@@ -3,7 +3,6 @@ import auth from '@react-native-firebase/auth';
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
 
-
 import PhoneNumberScreen from './screens/PhoneNumberScreen';
 import VerifyOtpScreen from './screens/VerifyOtpScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -19,7 +18,7 @@ import CustomDrawer from './components/CustomDrawer';
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -29,8 +28,6 @@ import {DarkModeContext} from './Context/DarkModeContext';
 import {LoginContext} from './Context/LoginContext';
 import {ConversationsContext} from './Context/ConversationsContext';
 import {AppState} from 'react-native';
-
-
 
 const AuthStackScreen = () => (
   <AuthStack.Navigator initialRouteName="SplashScreen">
@@ -67,9 +64,10 @@ const AppStackScreen = () => (
       component={WelcomeScreen}
       options={{
         title: 'welcome screen',
+
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#222831',
+          backgroundColor: '#1E2022',
         },
         headerTintColor: 'white',
         headerTintStyle: {
@@ -84,7 +82,7 @@ const AppStackScreen = () => (
         title: 'Contact Screen',
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#222831',
+          backgroundColor: '#1E2022',
         },
         headerTintColor: 'white',
         headerTintStyle: {
@@ -92,21 +90,7 @@ const AppStackScreen = () => (
         },
       }}
     />
-    <AppStack.Screen
-      name="SettingsScreen"
-      component={SettingsScreen}
-      options={{
-        title: 'Settings Screen',
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: '#222831',
-        },
-        headerTintColor: 'white',
-        headerTintStyle: {
-          fontWeight: 'bold',
-        },
-      }}
-    />
+
     <AppStack.Screen
       name="ChatScreen"
       component={ChatScreen}
@@ -114,24 +98,9 @@ const AppStackScreen = () => (
         title: 'Chat Screen',
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#222831',
+          backgroundColor: '#1E2022',
         },
 
-        headerTintColor: 'white',
-        headerTintStyle: {
-          fontWeight: 'bold',
-        },
-      }}
-    />
-    <AppStack.Screen
-      name="SearchScreen"
-      component={SearchScreen}
-      options={{
-        title: 'Search Screen',
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: '#222831',
-        },
         headerTintColor: 'white',
         headerTintStyle: {
           fontWeight: 'bold',
@@ -148,8 +117,7 @@ const AuthNavigation = () => {
   const [darkMode, setDarkMode] = useState(false);
   const toggleDarkMode = () => {
     setDarkMode(prevDarkMode => !prevDarkMode);
-    };
-    
+  };
 
   // const [isDarkTheme, setIsDarkTheme] = useState(false);
 
@@ -276,10 +244,9 @@ const AuthNavigation = () => {
   const screenOption = {
     headerShown: true,
   };
- 
 
   return (
-    <DarkModeContext.Provider value={{darkMode,setDarkMode,toggleDarkMode}}>
+    <DarkModeContext.Provider value={{darkMode, setDarkMode, toggleDarkMode}}>
       <NavigationContainer>
         {!currentUser ? (
           <AuthStackScreen />
