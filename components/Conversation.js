@@ -1,6 +1,8 @@
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
+
 import React from 'react';
-import {useState, useEffect} from 'react';
+
+import {useState, useEffect, memo} from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
 import firestore from '@react-native-firebase/firestore';
@@ -150,7 +152,7 @@ const Conversation = props => {
   );
 };
 
-export default Conversation;
+export default memo(Conversation);
 
 const styles = StyleSheet.create({
   conversation: {

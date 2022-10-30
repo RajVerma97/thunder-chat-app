@@ -8,11 +8,8 @@ import VerifyOtpScreen from './screens/VerifyOtpScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
-import SettingsScreen from './screens/SettingsScreen';
 import ChatScreen from './screens/ChatScreen';
 import ContactScreen from './screens/ContactScreen';
-import SearchScreen from './screens/SearchScreen';
-import ForwardScreen from './screens/ForwardScreen';
 
 import CustomDrawer from './components/CustomDrawer';
 

@@ -1,5 +1,6 @@
 import {StyleSheet, Text, View, Image} from 'react-native';
 import React from 'react';
+import {memo} from 'react';
 
 const Contact = props => {
   const contact = props.contact;
@@ -21,7 +22,7 @@ const Contact = props => {
   );
 };
 
-export default Contact;
+export default memo(Contact);
 
 const styles = StyleSheet.create({
   contact: {

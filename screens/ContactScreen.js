@@ -9,7 +9,8 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import React, {useState, useEffect, memo, useContext} from 'react';
+import React from 'react';
+import {useState, useEffect, useContext} from 'react';
 import auth from '@react-native-firebase/auth';
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
@@ -271,7 +272,7 @@ const ContactScreen = () => {
   );
 };
 
-export default memo(ContactScreen);
+export default ContactScreen;
 
 const styles = StyleSheet.create({
   container: {

@@ -2,16 +2,16 @@ import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
 import React from 'react';
 import {memo} from 'react';
 
-const Emoji = ({item, index,setText}) => {
+const Emoji = ({item, index, setText}) => {
   return (
     <TouchableOpacity
       onPress={() => setText(prevState => prevState + item)}
       key={index}
-      style={{marginRight: 6, marginBottom: 26}}>
+      style={styles.emoji}>
       <Text
         style={{
-          color: 'red',
-          fontSize: 40,
+          color: 'white',
+          fontSize: 38,
         }}>
         {item}
       </Text>
@@ -21,4 +21,6 @@ const Emoji = ({item, index,setText}) => {
 
 export default memo(Emoji);
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  emoji: {marginRight: 9, marginBottom: 20},
+});

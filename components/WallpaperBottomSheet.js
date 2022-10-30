@@ -5,11 +5,13 @@ import {
   useWindowDimensions,
   TouchableOpacity,
   Image,
-  Flatlist,
+  FlatList,
   Dimensions,
   Button,
 } from 'react-native';
-import React, {
+
+import React from 'react';
+import {
   useState,
   useEffect,
   useCallback,
@@ -24,7 +26,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {FlatList, PanGestureHandler} from 'react-native-gesture-handler';
+import {PanGestureHandler} from 'react-native-gesture-handler';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import FastImage from 'react-native-fast-image';
 import {DarkModeContext} from '../Context/DarkModeContext';
@@ -32,13 +34,14 @@ import {DarkModeContext} from '../Context/DarkModeContext';
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50;
 import firestore from '@react-native-firebase/firestore';
+import Wallpaper from '../components/Wallpaper';
 
 const WallpaperBottomSheet = React.forwardRef(
   (
     {backgroundWallpaper, setBackgroundWallpaper, changeBackgroundWallpaper},
     ref,
   ) => {
-    console.log('media bottomsheet rendering');
+    // console.log('media bottomsheet rendering');
     const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
 
     var [wallpapers, setWallpapers] = useState([
@@ -94,6 +97,27 @@ const WallpaperBottomSheet = React.forwardRef(
       };
     });
 
+    const renderItem = useCallback(({item, index}) => (
+      <Wallpaper
+        item={item}
+        index={index}
+        backgroundWallpaper={backgroundWallpaper}
+        changeBackgroundWallpaper={changeBackgroundWallpaper}
+      />
+    ));
+
+    const keyExtractor = useCallback((item, index) => index.toString(), []);
+
+    const ITEM_HEIGHT = 200;
+    const getItemLayout = useCallback(
+      (data, index) => ({
+        length: ITEM_HEIGHT,
+        offset: ITEM_HEIGHT * index,
+        index,
+      }),
+      [],
+    );
+
     return (
       <GestureDetector gesture={gesture}>
         <Animated.View
@@ -121,27 +145,13 @@ const WallpaperBottomSheet = React.forwardRef(
               }}>
               <FlatList
                 data={wallpapers}
-                renderItem={({item, index}) => {
-                  return (
-                    <TouchableOpacity
-                      onPress={() => {
-                        changeBackgroundWallpaper(item);
-                      }}
-                      style={[
-                        styles.item,
-                        item === backgroundWallpaper
-                          ? styles.selectedBackgroundWallpaper
-                          : null,
-                      ]}
-                      key={index}>
-                      <Image style={styles.item__image} source={item} />
-                    </TouchableOpacity>
-                  );
-                }}
+                renderItem={renderItem}
                 numColumns={3}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={keyExtractor}
                 initialNumToRender={10}
-                maxToRenderPerBatch={10}
+                maxToRenderPerBatch={8}
+                windowSize={5}
+                getItemLayout={getItemLayout}
               />
             </View>
           </View>
@@ -177,23 +187,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontFamily: 'Inter-Medium',
     marginBottom: 20,
-  },
-  item: {
-    marginRight: 18,
-    marginBottom: 16,
-    elevation: 5,
-    padding: 5,
-    backgroundColor: 'white',
-    borderRadius: 8,
-  },
-  item__image: {
-    width: 85,
-    height: 130,
-    resizeMode: 'cover',
-  },
-
-  selectedBackgroundWallpaper: {
-    backgroundColor: 'green',
   },
 
   removeWallpaperBtn: {

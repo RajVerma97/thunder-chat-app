@@ -8,7 +8,8 @@ import {
   Flatlist,
   Dimensions,
 } from 'react-native';
-import React, {
+import React from 'react';
+import  {
   useState,
   useEffect,
   useCallback,

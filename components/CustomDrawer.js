@@ -1,4 +1,3 @@
-import React, {useState, useLayoutEffect, useEffect, useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,6 +6,8 @@ import {
   TouchableOpacity,
   Switch,
 } from 'react-native';
+import React from 'react';
+import {useState, useLayoutEffect, useEffect, useContext, memo} from 'react';
 
 import {
   DrawerContentScrollView,
@@ -151,29 +152,6 @@ const CustomDrawer = props => {
           <TouchableOpacity
             style={styles.drawerItem}
             onPress={() =>
-              navigation.navigate('AppStackScreen', {
-                screen: 'SettingsScreen',
-              })
-            }>
-            <FeatherIcon
-              style={[
-                styles.drawerItem__icon,
-                darkMode ? {color: '#EEEEEE'} : null,
-              ]}
-              name="settings"
-            />
-
-            <Text
-              style={[
-                styles.drawerItem__text,
-                darkMode ? {color: '#EEEEEE'} : null,
-              ]}>
-              settings
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.drawerItem}
-            onPress={() =>
               Linking.openURL('https://github.com/RajVerma97/thunder-chat-app')
             }>
             <FeatherIcon
@@ -247,7 +225,7 @@ const CustomDrawer = props => {
   );
 };
 
-export default CustomDrawer;
+export default memo(CustomDrawer);
 
 const styles = StyleSheet.create({
   container: {

@@ -5,19 +5,17 @@ import {
   SafeAreaView,
   Image,
   TextInput,
-  Button,
   Keyboard,
   Platform,
   KeyboardAvoidingView,
   ScrollView,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  ActivityIndicator,
-  Modal,
   useWindowDimensions,
   ImageBackground,
   FlatList,
 } from 'react-native';
+
 import React from 'react';
 import {
   useState,
@@ -28,9 +26,7 @@ import {
   useMemo,
   useContext,
 } from 'react';
-import {useNavigation} from '@react-navigation/native';
-import {useRoute} from '@react-navigation/native';
-import {useIsFocused} from '@react-navigation/native';
+import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native';
 
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore';
@@ -38,13 +34,9 @@ import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
 import moment from 'moment';
 import ChatMessage from '../components/ChatMessage';
-// import Animated from 'react-native-reanimated';
-import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import Entypo from 'react-native-vector-icons/Entypo';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-// import SimpleLineIcon from 'react-native-vector-icons/SimpleLineIcons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import PushNotification from 'react-native-push-notification';
 import FastImage from 'react-native-fast-image';
@@ -62,15 +54,13 @@ import {
 } from 'react-native-gesture-handler';
 import WallpaperBottomSheet from '../components/WallpaperBottomSheet';
 import {DarkModeContext} from '../Context/DarkModeContext';
-
-// import EmojiInput from 'react-native-emoji-input';
 import EmojiData from '../emojiData.json';
-
-var emojiArr = Object.keys(EmojiData);
 import Emoji from '../components/Emoji';
 
+var emojiArr = Object.keys(EmojiData);
+
 const ChatScreen = props => {
-  console.log('chat screen rendering');
+  // console.log('chat screen rendering');
   const navigation = useNavigation();
   const route = useRoute();
   const {conversationId, conversation} = route.params;
@@ -103,16 +93,20 @@ const ChatScreen = props => {
   const [backgroundWallpaper, setBackgroundWallpaper] = useState(null);
   const [topMenuToggle, setTopMenuToggle] = useState(false);
   const {darkMode, setDarkMode, toggleDarkMode} = useContext(DarkModeContext);
+  const [receiverStatus, setReceiverStatus] = useState(null);
 
   const isFocused = useIsFocused();
   const dimensions = useWindowDimensions();
   const top = useSharedValue(dimensions.height);
+
   const closeTopMenu = () => {
     setTopMenuToggle(false);
   };
+
   const openTopMenu = () => {
     setTopMenuToggle(true);
   };
+
   const changeBackgroundWallpaper = async item => {
     await firestore()
       .collection('Conversations')
@@ -121,7 +115,7 @@ const ChatScreen = props => {
     setBackgroundWallpaper(item);
   };
 
-  const showMediaBottomSheet = () => {
+  const showMediaBottomSheet = useCallback(() => {
     Keyboard.dismiss();
     if (emojiSelectorToggle) {
       setEmojiSelectorToggle(false);
@@ -132,13 +126,13 @@ const ChatScreen = props => {
     } else {
       mediaBottomSheetRef?.current?.scrollTo(-300);
     }
-  };
+  }, [mediaBottomSheetRef]);
 
-  const showEmojiBottomSheet = () => {
+  const showEmojiBottomSheet = useCallback(() => {
     Keyboard.dismiss();
 
     setEmojiSelectorToggle(prevEmojiSelectorToggle => !prevEmojiSelectorToggle);
-  };
+  }, [emojiSelectorToggle]);
 
   const changeTheme = useCallback(() => {
     Keyboard.dismiss();
@@ -153,14 +147,6 @@ const ChatScreen = props => {
     } else {
       wallpaperBottomSheetRef?.current?.scrollTo(-650);
     }
-
-    // top.value = withSpring(dimensions.height / 2, {
-    //   damping: 80,
-    //   overshootClamping: true,
-    //   restDisplacementThreshold: 0.1,
-    //   restSpeedThreshold: 0.1,
-    //   stiffness: 500,
-    // });
   }, [wallpaperBottomSheetRef]);
 
   const handleNotification = message => {
@@ -179,10 +165,7 @@ const ChatScreen = props => {
     });
   };
 
-  const deleteAllMessages = async () => {
-    // const result = await firestore().collection('Messsages').where('conversation');
-    // setMessages(prevMessages=>prevMessages.forEach())
-
+  const deleteAllMessages = useCallback(async () => {
     firestore()
       .collection('Messages')
       .where('conversationId', '==', conversationId)
@@ -203,7 +186,8 @@ const ChatScreen = props => {
           //  setLoading(prevLoading => false);
         }
       });
-  };
+  }, []);
+
   useEffect(() => {
     if (conversationWallpaper) {
       setBackgroundWallpaper(conversationWallpaper);
@@ -239,11 +223,12 @@ const ChatScreen = props => {
           />
           <View>
             <Text style={styles.displayName}>{receiver?.displayName}</Text>
-            {receiver?.status === 'online' ? (
+            {/* <Text style={{color: 'red'}}>{receiverStatus}</Text> */}
+            {receiverStatus === 'online' ? (
               <Text style={styles.onlineStatus}>online</Text>
             ) : (
               <Text style={styles.onlineStatus}>
-                last seen {moment(receiver.status).fromNow()}
+                last seen {receiverStatus}
               </Text>
             )}
           </View>
@@ -259,6 +244,32 @@ const ChatScreen = props => {
       ),
     });
   }, [navigation, receiver]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const getReceiverStatus = async () => {
+      try {
+        if (isMounted) {
+          const response = await firestore()
+            .collection('Users')
+            .doc(receiver.uid)
+            .get();
+          let receiverStatus = response._data.status;
+          console.log('receiver status is');
+          console.log(moment(receiverStatus.toDate()).fromNow());
+          setReceiverStatus(prevReceiverStatus =>
+            moment(receiverStatus.toDate()).fromNow(),
+          );
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getReceiverStatus();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const updateUnReadMessages = async () => {
@@ -465,6 +476,8 @@ const ChatScreen = props => {
       }
 
       Keyboard.dismiss();
+      // showEmojiBottomSheet();
+      setEmojiSelectorToggle(false);
     },
     [text],
   );
@@ -472,7 +485,7 @@ const ChatScreen = props => {
   const deleteMessage = useCallback(
     async messageId => {
       try {
-        console.log('delete' + messageId);
+        // console.log('delete' + messageId);
 
         const result = await firestore()
           .collection('Messages')
@@ -546,6 +559,24 @@ const ChatScreen = props => {
       );
     },
     [messages],
+  );
+
+  const renderItem = useCallback(
+    ({item, index}) => <Emoji item={item} index={index} setText={setText} />,
+    [],
+  );
+
+  const keyExtractor = useCallback((item, index) => index.toString(), []);
+
+  const ITEM_HEIGHT = 200;
+
+  const getItemLayout = useCallback(
+    (data, index) => ({
+      length: ITEM_HEIGHT,
+      offset: ITEM_HEIGHT * index,
+      index,
+    }),
+    [],
   );
 
   return (
@@ -691,11 +722,6 @@ const ChatScreen = props => {
                       />
                     </TouchableOpacity>
                   ) : (
-                    // <Button
-                    //   style={styles.sendMsgBtn}
-
-                    //   title="send msg"
-                    // />
                     <>
                       <TouchableOpacity onPress={() => openCamera()}>
                         <FeatherIcon
@@ -717,14 +743,13 @@ const ChatScreen = props => {
                   <View style={styles.emojiSelectorWrapper}>
                     <FlatList
                       data={emojiArr}
-                      renderItem={({item, index}) => {
-                        return (
-                          <Emoji item={item} index={index} setText={setText} />
-                        );
-                      }}
+                      renderItem={renderItem}
                       numColumns={6}
-                      keyExtractor={(item, index) => index.toString()}
-                      initialNumToRender={7}
+                      keyExtractor={keyExtractor}
+                      initialNumToRender={10}
+                      maxToRenderPerBatch={8}
+                      windowSize={8}
+                      // getItemLayout={getItemLayout}
                     />
                   </View>
                 ) : null}
@@ -885,8 +910,10 @@ const styles = StyleSheet.create({
   emojiSelectorWrapper: {
     width: '100%',
     height: 400,
-    backgroundColor: 'white',
+    backgroundColor: '#E2E2E2',
     alignSelf: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
   },
 });

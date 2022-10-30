@@ -7,35 +7,34 @@ import {
   TouchableWithoutFeedback,
   Modal,
   ActivityIndicator,
-  Linking,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React from 'react';
+import {useState, useEffect, useCallback, useMemo, memo} from 'react';
+
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Video from 'react-native-video';
 import FastImage from 'react-native-fast-image';
-import {memo} from 'react';
 import moment from 'moment';
 import {set} from 'react-native-reanimated';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import DoubleCheck from './DoubleCheck';
-import Hyperlink from 'react-native-hyperlink';
 // import RNFetchBlob from 'react-native-fetch-blob';
 import PushNotification from 'react-native-push-notification';
 
 // import * as Progress from 'react-native-progress';
-import ProgressBar from 'react-native-progress/Bar';
-import ProgressCircle from 'react-native-progress/Circle';
-import ProgressCircleSnail from 'react-native-progress/CircleSnail';
+// import ProgressBar from 'react-native-progress/Bar';
+// import ProgressCircle from 'react-native-progress/Circle';
+// import ProgressCircleSnail from 'react-native-progress/CircleSnail';
 import LottieView from 'lottie-react-native';
-import FileViewer from 'react-native-file-viewer';
-import RNFS from 'react-native-fs';
+// import FileViewer from 'react-native-file-viewer';
+// import RNFS from 'react-native-fs';
 
 const ChatMessage = props => {
-  console.log('chat message rendering');
+  // console.log('chat message rendering');
   const {
     messageId,
     text,
@@ -149,7 +148,7 @@ const ChatMessage = props => {
   useEffect(() => {
     let isMounted = true;
     const getVideoUrl = async () => {
-      console.log('get video url');
+      // console.log('get video url');
       try {
         if (isMounted) {
           if (video !== '') {
@@ -158,7 +157,7 @@ const ChatMessage = props => {
             const uri = video;
 
             const videoName = uri.substring(uri.lastIndexOf('/') + 1);
-            console.log('videoName ' + videoName);
+            // console.log('videoName ' + videoName);
             const uploadUri =
               Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
             setTransferred(0);
@@ -175,16 +174,16 @@ const ChatMessage = props => {
 
             await task;
             setUploading(false);
-            console.log('video is ' + video);
+            // console.log('video is ' + video);
             // setLoading(true);
 
             const filename = video.split('picker/')[1];
-            console.log('filename ' + filename);
+            // console.log('filename ' + filename);
 
             const url = await storage()
               .ref('/' + filename)
               .getDownloadURL();
-            console.log('url ' + url);
+            // console.log('url ' + url);
             // setLoading(false);
 
             setVideoUrl(prevVideoUrl => url);
@@ -330,7 +329,7 @@ const ChatMessage = props => {
           <></>
         )}
         {text ? (
-          <Hyperlink linkStyle={{color: 'blue'}} onPress={Linking.openURL}>
+         
             <Text
               style={[
                 styles.text,
@@ -341,7 +340,7 @@ const ChatMessage = props => {
               ]}>
               {text}
             </Text>
-          </Hyperlink>
+          
         ) : (
           <></>
         )}

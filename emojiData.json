@@ -1486,15 +1486,7 @@
     "skin_tone_support": true,
     "skin_tone_support_unicode_version": "1.0"
   },
-  "🫶": {
-    "name": "heart hands",
-    "slug": "heart_hands",
-    "group": "People & Body",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": true,
-    "skin_tone_support_unicode_version": "14.0"
-  },
+ 
   "👐": {
     "name": "open hands",
     "slug": "open_hands",
@@ -1636,22 +1628,8 @@
     "unicode_version": "5.0",
     "skin_tone_support": false
   },
-  "🫀": {
-    "name": "anatomical heart",
-    "slug": "anatomical_heart",
-    "group": "People & Body",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🫁": {
-    "name": "lungs",
-    "slug": "lungs",
-    "group": "People & Body",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
+  
   "🦷": {
     "name": "tooth",
     "slug": "tooth",
@@ -1700,14 +1678,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🫦": {
-    "name": "biting lip",
-    "slug": "biting_lip",
-    "group": "People & Body",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+  
   "👶": {
     "name": "baby",
     "slug": "baby",
@@ -2743,15 +2714,7 @@
     "skin_tone_support": true,
     "skin_tone_support_unicode_version": "4.0"
   },
-  "🥷": {
-    "name": "ninja",
-    "slug": "ninja",
-    "group": "People & Body",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": true,
-    "skin_tone_support_unicode_version": "13.0"
-  },
+  
   "👷": {
     "name": "construction worker",
     "slug": "construction_worker",
@@ -2779,15 +2742,7 @@
     "skin_tone_support": true,
     "skin_tone_support_unicode_version": "4.0"
   },
-  "🫅": {
-    "name": "person with crown",
-    "slug": "person_with_crown",
-    "group": "People & Body",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": true,
-    "skin_tone_support_unicode_version": "14.0"
-  },
+  
   "🤴": {
     "name": "prince",
     "slug": "prince",
@@ -2914,24 +2869,8 @@
     "skin_tone_support": true,
     "skin_tone_support_unicode_version": "3.0"
   },
-  "🫃": {
-    "name": "pregnant man",
-    "slug": "pregnant_man",
-    "group": "People & Body",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": true,
-    "skin_tone_support_unicode_version": "14.0"
-  },
-  "🫄": {
-    "name": "pregnant person",
-    "slug": "pregnant_person",
-    "group": "People & Body",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": true,
-    "skin_tone_support_unicode_version": "14.0"
-  },
+  
+ 
   "🤱": {
     "name": "breast-feeding",
     "slug": "breast_feeding",
@@ -3241,14 +3180,7 @@
     "unicode_version": "5.0",
     "skin_tone_support": false
   },
-  "🧌": {
-    "name": "troll",
-    "slug": "troll",
-    "group": "People & Body",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "💆": {
     "name": "person getting massage",
     "slug": "person_getting_massage",
@@ -4540,22 +4472,8 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🫎": {
-    "name": "moose",
-    "slug": "moose",
-    "group": "Animals & Nature",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
-  "🫏": {
-    "name": "donkey",
-    "slug": "donkey",
-    "group": "Animals & Nature",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
+ 
   "🐎": {
     "name": "horse",
     "slug": "horse",
@@ -4588,14 +4506,7 @@
     "unicode_version": "3.0",
     "skin_tone_support": false
   },
-  "🦬": {
-    "name": "bison",
-    "slug": "bison",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🐮": {
     "name": "cow face",
     "slug": "cow_face",
@@ -4724,14 +4635,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🦣": {
-    "name": "mammoth",
-    "slug": "mammoth",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🦏": {
     "name": "rhinoceros",
     "slug": "rhinoceros",
@@ -4804,14 +4708,7 @@
     "unicode_version": "0.7",
     "skin_tone_support": false
   },
-  "🦫": {
-    "name": "beaver",
-    "slug": "beaver",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🦔": {
     "name": "hedgehog",
     "slug": "hedgehog",
@@ -5012,22 +4909,8 @@
     "unicode_version": "3.0",
     "skin_tone_support": false
   },
-  "🦤": {
-    "name": "dodo",
-    "slug": "dodo",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪶": {
-    "name": "feather",
-    "slug": "feather",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+
+ 
   "🦩": {
     "name": "flamingo",
     "slug": "flamingo",
@@ -5052,14 +4935,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪽": {
-    "name": "wing",
-    "slug": "wing",
-    "group": "Animals & Nature",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
   "🐦‍⬛": {
     "name": "black bird",
     "slug": "black_bird",
@@ -5068,14 +4944,7 @@
     "unicode_version": "15.0",
     "skin_tone_support": false
   },
-  "🪿": {
-    "name": "goose",
-    "slug": "goose",
-    "group": "Animals & Nature",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
   "🐸": {
     "name": "frog",
     "slug": "frog",
@@ -5172,14 +5041,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🦭": {
-    "name": "seal",
-    "slug": "seal",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🐟": {
     "name": "fish",
     "slug": "fish",
@@ -5228,22 +5090,8 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪸": {
-    "name": "coral",
-    "slug": "coral",
-    "group": "Animals & Nature",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
-  "🪼": {
-    "name": "jellyfish",
-    "slug": "jellyfish",
-    "group": "Animals & Nature",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+  
+  
   "🐌": {
     "name": "snail",
     "slug": "snail",
@@ -5284,14 +5132,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪲": {
-    "name": "beetle",
-    "slug": "beetle",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🐞": {
     "name": "lady beetle",
     "slug": "lady_beetle",
@@ -5308,14 +5149,7 @@
     "unicode_version": "5.0",
     "skin_tone_support": false
   },
-  "🪳": {
-    "name": "cockroach",
-    "slug": "cockroach",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🕷️": {
     "name": "spider",
     "slug": "spider",
@@ -5348,22 +5182,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪰": {
-    "name": "fly",
-    "slug": "fly",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪱": {
-    "name": "worm",
-    "slug": "worm",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+   
   "🦠": {
     "name": "microbe",
     "slug": "microbe",
@@ -5396,14 +5215,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪷": {
-    "name": "lotus",
-    "slug": "lotus",
-    "group": "Animals & Nature",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+  
   "🏵️": {
     "name": "rosette",
     "slug": "rosette",
@@ -5460,14 +5272,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪻": {
-    "name": "hyacinth",
-    "slug": "hyacinth",
-    "group": "Animals & Nature",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
   "🌱": {
     "name": "seedling",
     "slug": "seedling",
@@ -5476,14 +5281,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪴": {
-    "name": "potted plant",
-    "slug": "potted_plant",
-    "group": "Animals & Nature",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🌲": {
     "name": "evergreen tree",
     "slug": "evergreen_tree",
@@ -5572,22 +5370,8 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪹": {
-    "name": "empty nest",
-    "slug": "empty_nest",
-    "group": "Animals & Nature",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
-  "🪺": {
-    "name": "nest with eggs",
-    "slug": "nest_with_eggs",
-    "group": "Animals & Nature",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+  
+ 
   "🍄": {
     "name": "mushroom",
     "slug": "mushroom",
@@ -5708,14 +5492,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🫐": {
-    "name": "blueberries",
-    "slug": "blueberries",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "🥝": {
     "name": "kiwi fruit",
     "slug": "kiwi_fruit",
@@ -5732,14 +5509,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🫒": {
-    "name": "olive",
-    "slug": "olive",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🥥": {
     "name": "coconut",
     "slug": "coconut",
@@ -5796,14 +5566,7 @@
     "unicode_version": "0.7",
     "skin_tone_support": false
   },
-  "🫑": {
-    "name": "bell pepper",
-    "slug": "bell_pepper",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🥒": {
     "name": "cucumber",
     "slug": "cucumber",
@@ -5852,14 +5615,7 @@
     "unicode_version": "3.0",
     "skin_tone_support": false
   },
-  "🫘": {
-    "name": "beans",
-    "slug": "beans",
-    "group": "Food & Drink",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+  
   "🌰": {
     "name": "chestnut",
     "slug": "chestnut",
@@ -5868,22 +5624,8 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🫚": {
-    "name": "ginger root",
-    "slug": "ginger_root",
-    "group": "Food & Drink",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
-  "🫛": {
-    "name": "pea pod",
-    "slug": "pea_pod",
-    "group": "Food & Drink",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+  
+ 
   "🍞": {
     "name": "bread",
     "slug": "bread",
@@ -5908,14 +5650,7 @@
     "unicode_version": "3.0",
     "skin_tone_support": false
   },
-  "🫓": {
-    "name": "flatbread",
-    "slug": "flatbread",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🥨": {
     "name": "pretzel",
     "slug": "pretzel",
@@ -6044,14 +5779,7 @@
     "unicode_version": "1.0",
     "skin_tone_support": false
   },
-  "🫔": {
-    "name": "tamale",
-    "slug": "tamale",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "🥙": {
     "name": "stuffed flatbread",
     "slug": "stuffed_flatbread",
@@ -6100,14 +5828,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🫕": {
-    "name": "fondue",
-    "slug": "fondue",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "🥣": {
     "name": "bowl with spoon",
     "slug": "bowl_with_spoon",
@@ -6468,14 +6189,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🫖": {
-    "name": "teapot",
-    "slug": "teapot",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "🍵": {
     "name": "teacup without handle",
     "slug": "teacup_without_handle",
@@ -6556,14 +6270,7 @@
     "unicode_version": "3.0",
     "skin_tone_support": false
   },
-  "🫗": {
-    "name": "pouring liquid",
-    "slug": "pouring_liquid",
-    "group": "Food & Drink",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "🥤": {
     "name": "cup with straw",
     "slug": "cup_with_straw",
@@ -6572,14 +6279,7 @@
     "unicode_version": "5.0",
     "skin_tone_support": false
   },
-  "🧋": {
-    "name": "bubble tea",
-    "slug": "bubble_tea",
-    "group": "Food & Drink",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🧃": {
     "name": "beverage box",
     "slug": "beverage_box",
@@ -6820,30 +6520,9 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪨": {
-    "name": "rock",
-    "slug": "rock",
-    "group": "Travel & Places",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪵": {
-    "name": "wood",
-    "slug": "wood",
-    "group": "Travel & Places",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🛖": {
-    "name": "hut",
-    "slug": "hut",
-    "group": "Travel & Places",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
+  
+ 
   "🏘️": {
     "name": "houses",
     "slug": "houses",
@@ -7148,14 +6827,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🛝": {
-    "name": "playground slide",
-    "slug": "playground_slide",
-    "group": "Travel & Places",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "🎡": {
     "name": "ferris wheel",
     "slug": "ferris_wheel",
@@ -7388,14 +7060,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🛻": {
-    "name": "pickup truck",
-    "slug": "pickup_truck",
-    "group": "Travel & Places",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🚚": {
     "name": "delivery truck",
     "slug": "delivery_truck",
@@ -7492,14 +7157,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🛼": {
-    "name": "roller skate",
-    "slug": "roller_skate",
-    "group": "Travel & Places",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🚏": {
     "name": "bus stop",
     "slug": "bus_stop",
@@ -7540,14 +7198,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🛞": {
-    "name": "wheel",
-    "slug": "wheel",
-    "group": "Travel & Places",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+  
   "🚨": {
     "name": "police car light",
     "slug": "police_car_light",
@@ -7596,14 +7247,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🛟": {
-    "name": "ring buoy",
-    "slug": "ring_buoy",
-    "group": "Travel & Places",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "⛵": {
     "name": "sailboat",
     "slug": "sailboat",
@@ -8884,14 +8528,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪄": {
-    "name": "magic wand",
-    "slug": "magic_wand",
-    "group": "Activities",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🎮": {
     "name": "video game",
     "slug": "video_game",
@@ -8940,30 +8577,9 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪅": {
-    "name": "piñata",
-    "slug": "pinata",
-    "group": "Activities",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪩": {
-    "name": "mirror ball",
-    "slug": "mirror_ball",
-    "group": "Activities",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
-  "🪆": {
-    "name": "nesting dolls",
-    "slug": "nesting_dolls",
-    "group": "Activities",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
+ 
+ 
   "♠️": {
     "name": "spade suit",
     "slug": "spade_suit",
@@ -9060,14 +8676,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪡": {
-    "name": "sewing needle",
-    "slug": "sewing_needle",
-    "group": "Activities",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "🧶": {
     "name": "yarn",
     "slug": "yarn",
@@ -9076,14 +8685,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪢": {
-    "name": "knot",
-    "slug": "knot",
-    "group": "Activities",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "👓": {
     "name": "glasses",
     "slug": "glasses",
@@ -9244,14 +8846,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪭": {
-    "name": "folding hand fan",
-    "slug": "folding_hand_fan",
-    "group": "Objects",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
   "👛": {
     "name": "purse",
     "slug": "purse",
@@ -9292,14 +8887,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🩴": {
-    "name": "thong sandal",
-    "slug": "thong_sandal",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "👞": {
     "name": "man’s shoe",
     "slug": "man_s_shoe",
@@ -9364,14 +8952,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪮": {
-    "name": "hair pick",
-    "slug": "hair_pick",
-    "group": "Objects",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
   "👑": {
     "name": "crown",
     "slug": "crown",
@@ -9412,14 +8993,7 @@
     "unicode_version": "5.0",
     "skin_tone_support": false
   },
-  "🪖": {
-    "name": "military helmet",
-    "slug": "military_helmet",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "⛑️": {
     "name": "rescue worker’s helmet",
     "slug": "rescue_worker_s_helmet",
@@ -9612,14 +9186,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪗": {
-    "name": "accordion",
-    "slug": "accordion",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🎸": {
     "name": "guitar",
     "slug": "guitar",
@@ -9668,30 +9235,9 @@
     "unicode_version": "3.0",
     "skin_tone_support": false
   },
-  "🪘": {
-    "name": "long drum",
-    "slug": "long_drum",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪇": {
-    "name": "maracas",
-    "slug": "maracas",
-    "group": "Objects",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
-  "🪈": {
-    "name": "flute",
-    "slug": "flute",
-    "group": "Objects",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
+ 
+ 
   "📱": {
     "name": "mobile phone",
     "slug": "mobile_phone",
@@ -9748,14 +9294,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪫": {
-    "name": "low battery",
-    "slug": "low_battery",
-    "group": "Objects",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "🔌": {
     "name": "electric plug",
     "slug": "electric_plug",
@@ -10124,14 +9663,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪙": {
-    "name": "coin",
-    "slug": "coin",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "💴": {
     "name": "yen banknote",
     "slug": "yen_banknote",
@@ -10652,14 +10184,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪃": {
-    "name": "boomerang",
-    "slug": "boomerang",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🏹": {
     "name": "bow and arrow",
     "slug": "bow_and_arrow",
@@ -10676,14 +10201,7 @@
     "unicode_version": "0.7",
     "skin_tone_support": false
   },
-  "🪚": {
-    "name": "carpentry saw",
-    "slug": "carpentry_saw",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🔧": {
     "name": "wrench",
     "slug": "wrench",
@@ -10692,14 +10210,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪛": {
-    "name": "screwdriver",
-    "slug": "screwdriver",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🔩": {
     "name": "nut and bolt",
     "slug": "nut_and_bolt",
@@ -10756,14 +10267,7 @@
     "unicode_version": "0.7",
     "skin_tone_support": false
   },
-  "🪝": {
-    "name": "hook",
-    "slug": "hook",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+  
   "🧰": {
     "name": "toolbox",
     "slug": "toolbox",
@@ -10780,14 +10284,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪜": {
-    "name": "ladder",
-    "slug": "ladder",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "⚗️": {
     "name": "alembic",
     "slug": "alembic",
@@ -10876,14 +10373,7 @@
     "unicode_version": "12.0",
     "skin_tone_support": false
   },
-  "🩼": {
-    "name": "crutch",
-    "slug": "crutch",
-    "group": "Objects",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "🩺": {
     "name": "stethoscope",
     "slug": "stethoscope",
@@ -10892,14 +10382,7 @@
     "unicode_version": "12.0",
     "skin_tone_support": false
   },
-  "🩻": {
-    "name": "x-ray",
-    "slug": "x_ray",
-    "group": "Objects",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "🚪": {
     "name": "door",
     "slug": "door",
@@ -10908,30 +10391,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🛗": {
-    "name": "elevator",
-    "slug": "elevator",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪞": {
-    "name": "mirror",
-    "slug": "mirror",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪟": {
-    "name": "window",
-    "slug": "window",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🛏️": {
     "name": "bed",
     "slug": "bed",
@@ -10964,14 +10424,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪠": {
-    "name": "plunger",
-    "slug": "plunger",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🚿": {
     "name": "shower",
     "slug": "shower",
@@ -10988,14 +10441,7 @@
     "unicode_version": "1.0",
     "skin_tone_support": false
   },
-  "🪤": {
-    "name": "mouse trap",
-    "slug": "mouse_trap",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🪒": {
     "name": "razor",
     "slug": "razor",
@@ -11044,14 +10490,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪣": {
-    "name": "bucket",
-    "slug": "bucket",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🧼": {
     "name": "soap",
     "slug": "soap",
@@ -11060,22 +10499,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🫧": {
-    "name": "bubbles",
-    "slug": "bubbles",
-    "group": "Objects",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
-  "🪥": {
-    "name": "toothbrush",
-    "slug": "toothbrush",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "🧽": {
     "name": "sponge",
     "slug": "sponge",
@@ -11116,14 +10540,7 @@
     "unicode_version": "1.0",
     "skin_tone_support": false
   },
-  "🪦": {
-    "name": "headstone",
-    "slug": "headstone",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
+ 
   "⚱️": {
     "name": "funeral urn",
     "slug": "funeral_urn",
@@ -11140,14 +10557,7 @@
     "unicode_version": "11.0",
     "skin_tone_support": false
   },
-  "🪬": {
-    "name": "hamsa",
-    "slug": "hamsa",
-    "group": "Objects",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "🗿": {
     "name": "moai",
     "slug": "moai",
@@ -11156,22 +10566,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪧": {
-    "name": "placard",
-    "slug": "placard",
-    "group": "Objects",
-    "emoji_version": "13.0",
-    "unicode_version": "13.0",
-    "skin_tone_support": false
-  },
-  "🪪": {
-    "name": "identification card",
-    "slug": "identification_card",
-    "group": "Objects",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "🏧": {
     "name": "ATM sign",
     "slug": "atm_sign",
@@ -11644,14 +11039,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🪯": {
-    "name": "khanda",
-    "slug": "khanda",
-    "group": "Symbols",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
   "♈": {
     "name": "Aries",
     "slug": "aries",
@@ -11932,14 +11320,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🛜": {
-    "name": "wireless",
-    "slug": "wireless",
-    "group": "Symbols",
-    "emoji_version": "15.0",
-    "unicode_version": "15.0",
-    "skin_tone_support": false
-  },
+ 
   "📳": {
     "name": "vibration mode",
     "slug": "vibration_mode",
@@ -12012,14 +11393,7 @@
     "unicode_version": "0.6",
     "skin_tone_support": false
   },
-  "🟰": {
-    "name": "heavy equals sign",
-    "slug": "heavy_equals_sign",
-    "group": "Symbols",
-    "emoji_version": "14.0",
-    "unicode_version": "14.0",
-    "skin_tone_support": false
-  },
+ 
   "♾️": {
     "name": "infinity",
     "slug": "infinity",

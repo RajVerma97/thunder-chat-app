@@ -37,7 +37,7 @@ import {DarkModeContext} from '../Context/DarkModeContext';
 import LottieView from 'lottie-react-native';
 
 const WelcomeScreen = props => {
-  console.log('welcome screen rendering');
+  // console.log('welcome screen rendering');
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const route = useRoute();
@@ -120,7 +120,7 @@ const WelcomeScreen = props => {
   }, [navigation, darkMode]);
 
   useLayoutEffect(() => {
-    console.log('get conversations inside useEffect');
+    // console.log('get conversations inside useEffect');
 
     let isCancelled = false;
 

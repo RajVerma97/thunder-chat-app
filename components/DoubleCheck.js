@@ -1,6 +1,7 @@
 import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
+import {memo} from 'react';
 
 const DoubleCheck = () => {
   return (
@@ -19,7 +20,7 @@ const DoubleCheck = () => {
   );
 };
 
-export default DoubleCheck;
+export default memo(DoubleCheck);
 
 const styles = StyleSheet.create({
   doubleCheck: {

@@ -7,6 +7,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import React from 'react';
+import {memo} from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -25,9 +26,7 @@ const TopMenuModal = ({
           activeOpacity={1}
           style={{
             flex: 1,
-            // backgroundColor: 'white',
             alignItems: 'flex-end',
-            // justifyContent: 'center',
           }}>
           <TouchableWithoutFeedback>
             <View style={styles.wrapper}>
@@ -49,15 +48,6 @@ const TopMenuModal = ({
                 <AntDesign style={styles.item__icon} name="picture" />
                 <Text style={styles.item__text}>change wallpaper </Text>
               </TouchableOpacity>
-              {/* <TouchableOpacity
-                style={styles.item}
-                onPress={() => {
-                  deleteAllMessages();
-                  closeTopMenu();
-                }}>
-                <Entypo style={styles.item__icon} name="block" />
-                <Text style={styles.item__text}>block </Text>
-              </TouchableOpacity> */}
             </View>
           </TouchableWithoutFeedback>
         </TouchableOpacity>
@@ -66,7 +56,7 @@ const TopMenuModal = ({
   );
 };
 
-export default TopMenuModal;
+export default memo(TopMenuModal);
 
 const styles = StyleSheet.create({
   wrapper: {
